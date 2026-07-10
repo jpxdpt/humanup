@@ -1,0 +1,51 @@
+[
+  {
+    "tag": "header",
+    "id": "masthead",
+    "classes": "site-header header-main-layout-1 ast-primary-menu-enabled ast-logo-title-inline",
+    "height": 95.171875,
+    "text": "Início\nSobre\nServiços\nContactos\n\t\t\n\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\n\t\tSearch for:\n\t\t\n\t\t\t\t\t\n\t\t\t\tSearch\n\t\t\t\t\n\t\t\t\t\t\t  \n\t\t\t\t\t\t  \n\t\t\t\n\t\t\t\n\t\n\t\t"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-398cb9f6 alignfull uagb-is-root-container",
+    "height": 415.390625,
+    "text": "descobre como te podemos ajudar a crescer com propósito"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "inherit-container-width wp-block-group alignfull is-style-ext-preset--group--natural-1--section",
+    "height": 576.984375,
+    "text": "Pacotes & Investimento\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nSTART-UP\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDiagnóstico organizacional inicial\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nI"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "inherit-container-width wp-block-group alignfull is-style-ext-preset--group--natural-1--section",
+    "height": 496.890625,
+    "text": "GO-UP\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPacote grow-UP\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n2 workshops de 90 min (online ou presencial)\n\n\n\n\n\n\n\n\n\n\n\nPlano "
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-c7e29dde alignfull uagb-is-root-container",
+    "height": 651.921875,
+    "text": "O nosso método\n\n\n\n\nOuvirEscutamos pessoas e equipas para compreender necessidades reais.\n\n\n\nIdentificarReconhecemos padr"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-layout-grid uagb-block-bbdlbf9k alignfull",
+    "height": 272.8125,
+    "text": "A mudança começa com uma conversa. Estamos aqui para ouvir.\n\n\n\n\nContactos"
+  },
+  {
+    "tag": "footer",
+    "id": "colophon",
+    "classes": "site-footer",
+    "height": 70,
+    "text": "Início\nSobre\nServiços\nContactos\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\n\t\t\t\tDireitos de Autor © 2026 HumanUp"
+  }
+]

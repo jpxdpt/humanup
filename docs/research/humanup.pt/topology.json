@@ -1,0 +1,67 @@
+[
+  {
+    "tag": "div",
+    "id": "page",
+    "classNames": "hfeed site",
+    "position": "relative",
+    "zIndex": "auto",
+    "height": 2605.78125,
+    "order": 0,
+    "textPreview": "Início\nSobre\nServiços\nContactos\n\t\t\n\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\n\t\tSearch for:\n\t\t\n\t\t\t\t\t\n\t\t\t\tSearch\n\t\t\t\t\n\t\t\t\t\t\t  \n\t",
+    "childCount": 3,
+    "display": "flex",
+    "overflow": "visible"
+  },
+  {
+    "tag": "div",
+    "id": "ast-desktop-header",
+    "classNames": "",
+    "position": "static",
+    "zIndex": "auto",
+    "height": 95.171875,
+    "order": 1,
+    "textPreview": "Início\nSobre\nServiços\nContactos\n\t\t\n\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\n\t\tSearch for:\n\t\t\n\t\t\t\t\t\n\t\t\t\tSearch\n\t\t\t\t\n\t\t\t\t\t\t  \n\t",
+    "childCount": 1,
+    "display": "block",
+    "overflow": "visible"
+  },
+  {
+    "tag": "div",
+    "id": "primary",
+    "classNames": "content-area primary",
+    "position": "static",
+    "zIndex": "auto",
+    "height": 2440.609375,
+    "order": 2,
+    "textPreview": "Felicidade que gera resultadosPotencie a produtividade e o bem-estar dos seus colaboradores com solu",
+    "childCount": 1,
+    "display": "block",
+    "overflow": "visible"
+  },
+  {
+    "tag": "article",
+    "id": "post-138",
+    "classNames": "post-138 page type-page status-publish has-post-thumbnail",
+    "position": "static",
+    "zIndex": "auto",
+    "height": 2440.609375,
+    "order": 3,
+    "textPreview": "Felicidade que gera resultadosPotencie a produtividade e o bem-estar dos seus colaboradores com solu",
+    "childCount": 2,
+    "display": "block",
+    "overflow": "visible"
+  },
+  {
+    "tag": "div",
+    "id": "swiper-wrapper-592d862fd910bd737",
+    "classNames": "swiper-wrapper",
+    "position": "relative",
+    "zIndex": "1",
+    "height": 350,
+    "order": 4,
+    "textPreview": "AcompanhamentoOferecemos avaliação contínua das estratégias de bem-estar, com indicadores claros e f",
+    "childCount": 6,
+    "display": "flex",
+    "overflow": "visible"
+  }
+]

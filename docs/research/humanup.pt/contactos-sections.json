@@ -1,0 +1,51 @@
+[
+  {
+    "tag": "header",
+    "id": "masthead",
+    "classes": "site-header header-main-layout-1 ast-primary-menu-enabled ast-logo-title-inline",
+    "height": 95.171875,
+    "text": "Início\nSobre\nServiços\nContactos\n\t\t\n\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\n\t\tSearch for:\n\t\t\n\t\t\t\t\t\n\t\t\t\tSearch\n\t\t\t\t\n\t\t\t\t\t\t  \n\t\t\t\t\t\t  \n\t\t\t\n\t\t\t\n\t\n\t\t"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-398cb9f6 alignfull uagb-is-root-container",
+    "height": 458,
+    "text": "Fale Connosco"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-layout-grid uagb-block-fd1e1b97 alignfull",
+    "height": 842,
+    "text": "Estamos Aqui Para o AjudarPreencha o Formulário de Contacto\n\n\n\n\nEmailgeral.humanup@gmail.comgeral@humanup.pt\n\n\n\n\n\nEndere"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-cfd882ac",
+    "height": 563.5625,
+    "text": "Estamos Aqui Para o AjudarPreencha o Formulário de Contacto\n\n\n\n\nEmailgeral.humanup@gmail.comgeral@humanup.pt\n\n\n\n\n\nEndere"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-14ee7a54",
+    "height": 203.171875,
+    "text": "Emailgeral.humanup@gmail.comgeral@humanup.pt"
+  },
+  {
+    "tag": "div",
+    "id": "",
+    "classes": "wp-block-uagb-container uagb-block-63c95272",
+    "height": 68.390625,
+    "text": "EndereçoEspinho, Portugal"
+  },
+  {
+    "tag": "footer",
+    "id": "colophon",
+    "classes": "site-footer",
+    "height": 70,
+    "text": "Início\nSobre\nServiços\nContactos\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\n\t\t\t\tDireitos de Autor © 2026 HumanUp"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "bodyOverflow": "hidden auto",
+  "scrollBehavior": "auto",
+  "hasLenis": false,
+  "hasLocomotive": false,
+  "scrollSnapContainers": [],
+  "keyframes": [
+    "rotate360",
+    "exist",
+    "swiper-preloader-spin",
+    "srfmPdSlideUp"
+  ],
+  "backdropFilterElements": []
+}

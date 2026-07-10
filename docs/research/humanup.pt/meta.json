@@ -1,0 +1,34 @@
+{
+  "favicons": [
+    {
+      "href": "https://humanup.pt/wp-content/uploads/2025/12/cropped-Copilot_20251212_212127-32x32.png",
+      "sizes": "32x32",
+      "type": ""
+    },
+    {
+      "href": "https://humanup.pt/wp-content/uploads/2025/12/cropped-Copilot_20251212_212127-192x192.png",
+      "sizes": "192x192",
+      "type": ""
+    },
+    {
+      "href": "https://humanup.pt/wp-content/uploads/2025/12/cropped-Copilot_20251212_212127-180x180.png",
+      "sizes": "",
+      "type": ""
+    }
+  ],
+  "appleTouchIcons": [
+    {
+      "href": "https://humanup.pt/wp-content/uploads/2025/12/cropped-Copilot_20251212_212127-180x180.png",
+      "sizes": ""
+    }
+  ],
+  "ogImages": [
+    "https://humanup.pt/wp-content/uploads/2025/12/grupo-de-amigos-reunidos-1024x576.jpg",
+    "https://humanup.pt/wp-content/uploads/2025/12/grupo-de-amigos-reunidos-scaled.jpg"
+  ],
+  "ogTitle": "Início - HumanUp",
+  "ogDescription": "Potencie a produtividade e o bem-estar dos seus colaboradores com soluções de diagnóstico e projetos de bem‑estar laboral personalizados.",
+  "twitterImage": "https://humanup.pt/wp-content/uploads/2025/12/grupo-de-amigos-reunidos-1024x576.jpg",
+  "title": "Início - HumanUp",
+  "description": "Potencie a produtividade e o bem-estar dos seus colaboradores com soluções de diagnóstico e projetos de bem‑estar laboral personalizados."
+}

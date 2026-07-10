@@ -1,0 +1,55 @@
+{
+  "images": [
+    {
+      "src": "https://humanup.pt/wp-content/uploads/2025/12/Copilot_20251212_212127-250x62.png",
+      "alt": "HumanUp",
+      "width": 250,
+      "height": 62,
+      "parentClasses": "custom-logo-link",
+      "siblings": 1,
+      "position": "static",
+      "zIndex": "auto"
+    },
+    {
+      "src": "https://humanup.pt/wp-content/uploads/2025/12/Copilot_20251212_212127-250x62.png",
+      "alt": "HumanUp",
+      "width": 250,
+      "height": 62,
+      "parentClasses": "custom-logo-link",
+      "siblings": 1,
+      "position": "static",
+      "zIndex": "auto"
+    },
+    {
+      "src": "https://humanup.pt/wp-content/uploads/2025/12/disposicao-da-vista-superior-com-um-cartao-emoji-sorridente-1024x1024.jpg",
+      "alt": "Disposicao Da Vista Superior Com Um Cartao Emoji Sorridente 1024x1024",
+      "width": 1024,
+      "height": 1024,
+      "parentClasses": "wp-block-uagb-image__figure",
+      "siblings": 1,
+      "position": "static",
+      "zIndex": "auto"
+    }
+  ],
+  "videos": [
+    {
+      "src": "https://humanup.pt/wp-content/uploads/2025/12/3252063-uhd_3840_2160_25fps.mp4",
+      "poster": "",
+      "autoplay": true,
+      "loop": true,
+      "muted": true,
+      "className": ""
+    }
+  ],
+  "bgImages": [
+    {
+      "url": "url(\"https://humanup.pt/wp-content/uploads/2025/12/grupo-de-amigos-reunidos-scaled.jpg\")",
+      "element": "div.wp-block-uagb-container"
+    },
+    {
+      "url": "url(\"https://humanup.pt/wp-content/uploads/2025/12/colegas-trabalhando-juntos-no-projeto-scaled.jpg\")",
+      "element": "video."
+    }
+  ],
+  "svgCount": 5
+}
