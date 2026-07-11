@@ -5,10 +5,11 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    if (loading) return;
     if (!isAuthenticated) {
       router.push("/login");
     } else if (user?.role === "admin") {
@@ -18,7 +19,7 @@ export default function DashboardPage() {
     } else if (user?.role === "colaborador") {
       router.push("/dashboard/colaborador");
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, loading]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">

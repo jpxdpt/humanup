@@ -15,16 +15,17 @@ export default function CeoDashboard() {
 }
 
 function CeoDashboardContent() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "dashboard";
 
   useEffect(() => {
+    if (loading) return;
     if (!isAuthenticated || user?.role !== "ceo") router.push("/login");
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, loading]);
 
-  if (!isAuthenticated || user?.role !== "ceo") return null;
+  if (loading || !isAuthenticated || user?.role !== "ceo") return null;
 
   const empresaNome = user?.empresaNome || "";
   const colaboradores = mockColaboradores.filter((c) => c.empresa_nome === empresaNome);

@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { mockAdmins, mockEmpresas, mockColaboradores, type Admin, type Empresa, type Colaborador } from "./db";
 
 export type UserRole = "admin" | "ceo" | "colaborador";
 
@@ -12,12 +11,12 @@ export interface AuthUser {
   email?: string;
   empresaNome?: string;
   empresaId?: string;
-  colaborador?: Colaborador;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (role: UserRole, email: string, password: string) => Promise<boolean>;
   loginColaborador: (codigo: string, nif: string) => Promise<boolean>;
   logout: () => void;
@@ -27,66 +26,50 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem("hup_user");
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem("hup_user"); }
-    }
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => setUser(data.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(async (role: UserRole, email: string, password: string): Promise<boolean> => {
-    // Simulate network delay
-    await new Promise((r) => setTimeout(r, 500));
-
-    if (role === "admin") {
-      const admin = mockAdmins.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.pass === password);
-      if (!admin) return false;
-      const u: AuthUser = { role: "admin", nome: admin.nome, email: admin.email };
-      setUser(u);
-      localStorage.setItem("hup_user", JSON.stringify(u));
-      return true;
-    }
-
-    if (role === "ceo") {
-      const empresa = mockEmpresas.find((e) => e.ceo.email.toLowerCase() === email.toLowerCase() && e.ceo.pass === password);
-      if (!empresa) return false;
-      const u: AuthUser = { role: "ceo", nome: empresa.ceo.nome, email: empresa.ceo.email, empresaNome: empresa.nome, empresaId: empresa.id };
-      setUser(u);
-      localStorage.setItem("hup_user", JSON.stringify(u));
-      return true;
-    }
-
-    return false;
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role, email, password }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    setUser(data);
+    return true;
   }, []);
 
   const loginColaborador = useCallback(async (codigo: string, nif: string): Promise<boolean> => {
-    await new Promise((r) => setTimeout(r, 500));
-    const colab = mockColaboradores.find((c) => c.nif === nif);
-    if (!colab) return false;
-    const empresa = mockEmpresas.find((e) => e.id === colab.empresa_id);
-    const u: AuthUser = {
-      role: "colaborador",
-      nome: colab.nome,
-      email: colab.email,
-      empresaNome: empresa?.nome,
-      empresaId: empresa?.id,
-      colaborador: colab,
-    };
-    setUser(u);
-    localStorage.setItem("hup_user", JSON.stringify(u));
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "colaborador", codigo, nif }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    setUser(data);
     return true;
   }, []);
 
   const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("hup_user");
-    router.push("/");
+    fetch("/api/auth/logout", { method: "POST" }).finally(() => {
+      setUser(null);
+      router.push("/");
+    });
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, loginColaborador, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, login, loginColaborador, logout }}>
       {children}
     </AuthContext.Provider>
   );

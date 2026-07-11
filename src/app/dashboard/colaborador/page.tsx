@@ -6,15 +6,16 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout, Panel } from "@/components/dashboard";
 
 export default function ColaboradorDashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [respostas, setRespostas] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (loading) return;
     if (!isAuthenticated || user?.role !== "colaborador") router.push("/login");
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, loading]);
 
-  if (!isAuthenticated || user?.role !== "colaborador") return null;
+  if (loading || !isAuthenticated || user?.role !== "colaborador") return null;
 
   const perguntas = [
     { id: "q1", texto: "Sinto-me motivado(a) no meu trabalho atual.", tipo: "escala" },

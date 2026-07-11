@@ -31,7 +31,7 @@ const SECTION_LABELS: Record<string, string> = {
 };
 
 export default function AreaReservadaPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const { content, setContent, resetContent } = useContent();
   const router = useRouter();
   const [draft, setDraft] = useState<SiteContent>(content);
@@ -39,29 +39,32 @@ export default function AreaReservadaPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
     if (!isAuthenticated || user?.role !== "admin") router.push("/login");
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, loading]);
 
   useEffect(() => {
     setDraft(content);
   }, [content]);
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (loading || !isAuthenticated || user?.role !== "admin") return null;
 
   const handleChange = (path: Path, value: unknown) => {
     setDraft((prev) => setPath(prev, path, value) as SiteContent);
     setSaved(false);
   };
 
-  const handleSave = () => {
-    setContent(draft);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    const ok = await setContent(draft);
+    if (ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!confirm("Repor todos os conteúdos para os valores predefinidos? Esta ação não pode ser desfeita.")) return;
-    resetContent();
+    await resetContent();
   };
 
   return (

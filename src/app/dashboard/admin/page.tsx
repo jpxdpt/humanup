@@ -15,16 +15,17 @@ export default function AdminDashboard() {
 }
 
 function AdminDashboardContent() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "dashboard";
 
   useEffect(() => {
+    if (loading) return;
     if (!isAuthenticated || user?.role !== "admin") router.push("/login");
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, loading]);
 
-  if (!isAuthenticated || user?.role !== "admin") return null;
+  if (loading || !isAuthenticated || user?.role !== "admin") return null;
 
   const totalEmpresas = mockEmpresas.length;
   const totalColabs = mockEmpresas.reduce((acc, e) => acc + e.ncolab, 0);

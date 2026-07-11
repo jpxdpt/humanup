@@ -3,61 +3,44 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_CONTENT, type SiteContent } from "./content-schema";
 
-const STORAGE_KEY = "hup_content";
-
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
-}
-
-function deepMerge<T>(base: T, patch: unknown): T {
-  if (!isPlainObject(base) || !isPlainObject(patch)) {
-    return (patch === undefined ? base : (patch as T));
-  }
-  const result: Record<string, unknown> = { ...base };
-  for (const key of Object.keys(base)) {
-    if (key in patch) {
-      const baseVal = (base as Record<string, unknown>)[key];
-      const patchVal = (patch as Record<string, unknown>)[key];
-      result[key] = isPlainObject(baseVal) ? deepMerge(baseVal, patchVal) : patchVal;
-    }
-  }
-  return result as T;
-}
-
 interface ContentContextType {
   content: SiteContent;
-  setContent: (content: SiteContent) => void;
-  resetContent: () => void;
+  loading: boolean;
+  setContent: (content: SiteContent) => Promise<boolean>;
+  resetContent: () => Promise<boolean>;
 }
 
 const ContentContext = createContext<ContentContextType | null>(null);
 
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [content, setContentState] = useState<SiteContent>(DEFAULT_CONTENT);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return;
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage on mount
-      setContentState(deepMerge(DEFAULT_CONTENT, JSON.parse(stored)));
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    fetch("/api/content")
+      .then((r) => r.json())
+      .then((data) => setContentState(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const setContent = useCallback((next: SiteContent) => {
+  const setContent = useCallback(async (next: SiteContent): Promise<boolean> => {
+    const res = await fetch("/api/content", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next),
+    });
+    if (!res.ok) return false;
     setContentState(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    return true;
   }, []);
 
-  const resetContent = useCallback(() => {
-    setContentState(DEFAULT_CONTENT);
-    localStorage.removeItem(STORAGE_KEY);
-  }, []);
+  const resetContent = useCallback(async (): Promise<boolean> => {
+    return setContent(DEFAULT_CONTENT);
+  }, [setContent]);
 
   return (
-    <ContentContext.Provider value={{ content, setContent, resetContent }}>
+    <ContentContext.Provider value={{ content, loading, setContent, resetContent }}>
       {children}
     </ContentContext.Provider>
   );
