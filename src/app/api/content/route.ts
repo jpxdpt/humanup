@@ -5,10 +5,11 @@ import { verifySession, SESSION_COOKIE } from "@/lib/jwt";
 import { DEFAULT_CONTENT } from "@/lib/content-schema";
 
 export async function GET() {
-  const db = getDb();
-  const row = db.prepare("SELECT data FROM site_content WHERE id = 1").get() as { data: string } | undefined;
+  const db = await getDb();
+  const result = await db.query("SELECT data FROM site_content WHERE id = 1");
+  const row = result.rows[0] as { data: unknown } | undefined;
   if (!row) return NextResponse.json(DEFAULT_CONTENT);
-  return NextResponse.json(JSON.parse(row.data));
+  return NextResponse.json(row.data);
 }
 
 export async function PUT(request: Request) {
@@ -20,7 +21,7 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
-  const db = getDb();
-  db.prepare("UPDATE site_content SET data = ? WHERE id = 1").run(JSON.stringify(body));
+  const db = await getDb();
+  await db.query("UPDATE site_content SET data = $1 WHERE id = 1", [JSON.stringify(body)]);
   return NextResponse.json({ ok: true });
 }

@@ -30,14 +30,15 @@ interface ColaboradorRow {
 export async function POST(request: Request) {
   const body = await request.json();
   const { role } = body;
-  const db = getDb();
+  const db = await getDb();
 
   if (role === "admin") {
     const { email, password } = body;
     if (typeof email !== "string" || typeof password !== "string") {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    const admin = db.prepare("SELECT * FROM admins WHERE lower(email) = lower(?)").get(email) as AdminRow | undefined;
+    const result = await db.query("SELECT * FROM admins WHERE lower(email) = lower($1)", [email]);
+    const admin = result.rows[0] as AdminRow | undefined;
     if (!admin || !bcrypt.compareSync(password, admin.password_hash)) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
     }
@@ -52,7 +53,8 @@ export async function POST(request: Request) {
     if (typeof email !== "string" || typeof password !== "string") {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    const empresa = db.prepare("SELECT * FROM empresas WHERE lower(ceo_email) = lower(?)").get(email) as EmpresaRow | undefined;
+    const result = await db.query("SELECT * FROM empresas WHERE lower(ceo_email) = lower($1)", [email]);
+    const empresa = result.rows[0] as EmpresaRow | undefined;
     if (!empresa || !bcrypt.compareSync(password, empresa.ceo_password_hash)) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
     }
@@ -74,11 +76,13 @@ export async function POST(request: Request) {
     if (typeof nif !== "string" || typeof codigo !== "string") {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    const colab = db.prepare("SELECT * FROM colaboradores WHERE nif = ?").get(nif) as ColaboradorRow | undefined;
+    const result = await db.query("SELECT * FROM colaboradores WHERE nif = $1", [nif]);
+    const colab = result.rows[0] as ColaboradorRow | undefined;
     if (!colab || !bcrypt.compareSync(codigo.toUpperCase(), colab.access_code_hash)) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
     }
-    const empresa = db.prepare("SELECT nome FROM empresas WHERE id = ?").get(colab.empresa_id) as { nome: string } | undefined;
+    const empresaResult = await db.query("SELECT nome FROM empresas WHERE id = $1", [colab.empresa_id]);
+    const empresa = empresaResult.rows[0] as { nome: string } | undefined;
     const token = await signSession({
       sub: colab.id,
       role: "colaborador",
