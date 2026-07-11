@@ -1,7 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useContent } from "@/lib/content-store";
 
 export function WhyInvestSection() {
+  const { content } = useContent();
+  const { whyInvest } = content.home;
   return (
     <section className="w-full bg-white py-16">
       <div className="container-site">
@@ -25,34 +30,18 @@ export function WhyInvestSection() {
                   &nbsp;
                 </span>
                 <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize mb-5">
-                  Porquê investir em felicidade organizacional?
+                  {whyInvest.title}
                 </h2>
-                <p className="font-sans text-base font-medium leading-[26.4px] text-foreground mb-8">
-                  Num mundo em constante mudança, onde a produtividade depende
-                  cada vez mais da motivação e do bem-estar das pessoas, as
-                  organizações enfrentam um desafio decisivo: criar ambientes que
-                  inspirem, valorizem e cuidem dos seus colaboradores.
-                  <br />
-                  Não se trata apenas de melhorar o clima interno. Estudos
-                  internacionais demonstram que empresas que investem em
-                  felicidade organizacional{" "}
-                  <strong>reduzem o absentismo</strong>,{" "}
-                  <strong>aumentam a retenção</strong> de talento e conquistam{" "}
-                  <strong>resultados financeiros superiores</strong>. Em
-                  Portugal, os dados revelam que ainda há um longo caminho a
-                  percorrer — e é precisamente aqui que surge a oportunidade de
-                  transformar a cultura empresarial.
-                  <br />
-                  Antes de olhar para os números, é importante compreender que
-                  cada percentagem representa mais do que estatística:
-                  representa pessoas, equipas e o futuro das organizações.
-                </p>
+                <p
+                  className="font-sans text-base font-medium leading-[26.4px] text-foreground mb-8 whitespace-pre-line"
+                  dangerouslySetInnerHTML={{ __html: whyInvest.body }}
+                />
                 <div>
                   <Link
-                    href="/sobre"
+                    href={whyInvest.ctaHref}
                     className="inline-block bg-primary text-primary-foreground font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-md hover:opacity-90 transition-opacity"
                   >
-                    Saber Mais
+                    {whyInvest.ctaLabel}
                   </Link>
                 </div>
               </div>

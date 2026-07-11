@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const COUNTERS = [
-  { value: 53, suffix: "%", label: "dos trabalhadores faltam ao trabalho por <strong>burnout</strong>" },
-  { value: 79, suffix: "%", label: "dos colaboradores apresentam <strong>falta de envolvimento</strong> na empresa" },
-  { value: 54, suffix: "%", label: "dos trabalhadores <strong>não se sentem valorizados </strong>pela organização" },
-  { value: 47, suffix: "%", label: "do tempo os trabalhadores estão a<strong> procrastinar</strong>" },
-  { value: 1.4, suffix: "%", label: "<strong>do volume de negócios</strong> das empresas portuguesas <strong>perde-se </strong>devido à quebra de produtividade" },
-  { value: 12.4, suffix: " dias", label: "de <strong>absentismo</strong> proveniente do stresse e problemas de saúde psicológica" },
-];
+import { useContent } from "@/lib/content-store";
 
 function useCountUp(target: number, duration: number, isVisible: boolean) {
   const [current, setCurrent] = useState(0);
@@ -88,25 +80,23 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
 }
 
 export function StatsCounter() {
+  const { content } = useContent();
+  const { stats, statsSource } = content.home;
+  const columns = [stats.slice(0, 2), stats.slice(2, 4), stats.slice(4, 6)];
   return (
     <section className="w-full bg-white py-8">
       <div className="container-site">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <CounterItem {...COUNTERS[0]} />
-            <CounterItem {...COUNTERS[1]} />
-          </div>
-          <div>
-            <CounterItem {...COUNTERS[2]} />
-            <CounterItem {...COUNTERS[3]} />
-          </div>
-          <div>
-            <CounterItem {...COUNTERS[4]} />
-            <CounterItem {...COUNTERS[5]} />
-          </div>
+          {columns.map((col, i) => (
+            <div key={i}>
+              {col.map((stat, j) => (
+                <CounterItem key={j} {...stat} />
+              ))}
+            </div>
+          ))}
         </div>
         <p className="font-sans text-sm font-medium text-primary mt-4">
-          Relatórios Gallup, Deloitte, McKinsey, OCDE
+          {statsSource}
         </p>
       </div>
     </section>

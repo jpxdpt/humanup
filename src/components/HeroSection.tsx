@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useContent } from "@/lib/content-store";
 
 export function HeroSection() {
+  const { content } = useContent();
+  const { hero } = content.home;
   return (
     <section className="relative flex flex-col justify-center items-start w-full min-h-[746px] overflow-visible">
       {/* Background image */}
@@ -24,18 +29,16 @@ export function HeroSection() {
       <div className="container-site relative z-10 py-24">
         <div className="max-w-[600px]">
           <h1 className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-foreground capitalize mb-5">
-            Felicidade que gera resultados
+            {hero.title}
           </h1>
           <p className="font-sans text-base font-medium leading-[26.4px] text-foreground mb-10 max-w-[600px]">
-            Potencie a produtividade e o bem-estar dos seus colaboradores com
-            soluções de diagnóstico e projetos de bem‑estar laboral
-            personalizados.
+            {hero.description}
           </p>
           <Link
-            href="/sobre"
+            href={hero.ctaHref}
             className="inline-block bg-primary text-primary-foreground font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-md hover:opacity-90 transition-opacity"
           >
-            Saber Mais
+            {hero.ctaLabel}
           </Link>
         </div>
       </div>

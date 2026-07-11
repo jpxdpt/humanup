@@ -6,17 +6,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { SearchIcon, MenuIcon, CloseIcon } from "@/components/icons";
-
-const NAV_ITEMS = [
-  { label: "Início", href: "/" },
-  { label: "Sobre", href: "/sobre" },
-  { label: "Serviços", href: "/servicos" },
-  { label: "Contactos", href: "/contactos" },
-];
+import { useContent } from "@/lib/content-store";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { content } = useContent();
+  const { header } = content;
+  const NAV_ITEMS = header.nav;
 
   return (
     <header
@@ -31,7 +28,7 @@ export function SiteHeader() {
               <div className="flex items-center gap-3">
                 <Link href="/" className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-base">H</div>
-                  <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">HumanUp</span>
+                  <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight">{header.logoText}</span>
                 </Link>
               </div>
               <div className="flex items-center gap-4">
@@ -58,10 +55,10 @@ export function SiteHeader() {
                   </ul>
                 </nav>
                 <Link
-                  href="/login"
+                  href={header.ctaHref}
                   className="bg-primary text-on-primary font-button text-button px-5 py-2 rounded-lg hover:opacity-90 transition-opacity"
                 >
-                  Iniciar Sessão
+                  {header.ctaLabel}
                 </Link>
               </div>
             </div>
@@ -76,7 +73,7 @@ export function SiteHeader() {
             <div className="flex items-center justify-between px-6 h-[70px]">
               <Link href="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">H</div>
-                <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight text-lg">HumanUp</span>
+                <span className="font-headline-md text-headline-md font-bold text-primary tracking-tight text-lg">{header.logoText}</span>
               </Link>
               <button
                 type="button"
@@ -121,11 +118,11 @@ export function SiteHeader() {
                 })}
                 <li className="mt-2 pt-2 border-t border-outline-variant">
                   <Link
-                    href="/login"
+                    href={header.ctaHref}
                     className="block py-2.5 font-button text-button font-semibold text-primary"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Iniciar Sessão
+                    {header.ctaLabel}
                   </Link>
                 </li>
               </ul>

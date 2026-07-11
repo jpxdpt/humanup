@@ -1,75 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
-
-const FEATURES = [
-  "Diagnóstico organizacional inicial",
-  "Inquérito de felicidade",
-  "Relatório de resultados + índice",
-];
-
-const PACKAGES = [
-  {
-    name: "START-UP",
-    features: [
-      { icon: true, text: "Diagnóstico organizacional inicial" },
-      { icon: true, text: "Inquérito de felicidade" },
-      { icon: true, text: "Relatório de resultados + índice" },
-    ],
-    cta: "Saber Mais",
-    ctaHref: "/contactos",
-  },
-  {
-    name: "GO-UP",
-    popular: true,
-    features: [
-      { icon: true, text: "Tudo do START-UP" },
-      { icon: true, text: "Workshops de bem-estar" },
-      { icon: true, text: "Acompanhamento trimestral" },
-      { icon: true, text: "Plano de ação personalizado" },
-    ],
-    cta: "Saber Mais",
-    ctaHref: "/contactos",
-  },
-  {
-    name: "GROW-UP",
-    features: [
-      { icon: true, text: "Tudo do GO-UP" },
-      { icon: true, text: "Programa de desenvolvimento de lideranças" },
-      { icon: true, text: "Avaliação de impacto semestral" },
-      { icon: true, text: "Consultoria contínua" },
-      { icon: true, text: "Relatório de progresso detalhado" },
-    ],
-    cta: "Saber Mais",
-    ctaHref: "/contactos",
-  },
-];
-
-const METHOD_STEPS = [
-  {
-    number: "01",
-    title: "Ouvir",
-    description: "Escutamos pessoas e equipas para compreender o contexto, os desafios e as oportunidades.",
-  },
-  {
-    number: "02",
-    title: "Diagnosticar",
-    description: "Analisamos dados, identificamos padrões e apresentamos um diagnóstico claro e acionável.",
-  },
-  {
-    number: "03",
-    title: "Agir",
-    description: "Implementamos soluções personalizadas com acompanhamento próximo e medição de resultados.",
-  },
-  {
-    number: "04",
-    title: "Evoluir",
-    description: "Avaliamos o impacto, ajustamos o rumo e garantimos a sustentabilidade das mudanças.",
-  },
-];
+import { useContent } from "@/lib/content-store";
 
 export default function ServicosPage() {
+  const { content } = useContent();
+  const { servicos } = content;
+  const { hero, packagesTitle, packages: PACKAGES, methodTitle, methodSteps: METHOD_STEPS, cta } = servicos;
   return (
     <div className="hfeed site flex flex-col min-h-screen">
       <SiteHeader />
@@ -80,9 +20,9 @@ export default function ServicosPage() {
             {/* Hero Banner */}
             <section className="wp-block-uagb-container alignfull bg-gradient-to-br from-primary to-amber-600 py-16">
               <div className="container-site text-center">
-                <p className="font-sans text-lg font-medium text-white/80 mb-2">descobre como te podemos ajudar a</p>
+                <p className="font-sans text-lg font-medium text-white/80 mb-2">{hero.eyebrow}</p>
                 <h1 className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white capitalize">
-                  crescer com propósito
+                  {hero.title}
                 </h1>
               </div>
             </section>
@@ -91,7 +31,7 @@ export default function ServicosPage() {
             <section className="w-full bg-white py-20">
               <div className="container-site">
                 <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize text-center mb-16">
-                  Pacotes & Investimento
+                  {packagesTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                   {PACKAGES.map((pkg) => (
@@ -139,11 +79,11 @@ export default function ServicosPage() {
             <section className="w-full bg-gray-50 py-20">
               <div className="container-site">
                 <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize text-center mb-16">
-                  O nosso método
+                  {methodTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-                  {METHOD_STEPS.map((step) => (
-                    <div key={step.number} className="text-center">
+                  {METHOD_STEPS.map((step, i) => (
+                    <div key={i} className="text-center">
                       <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="font-heading text-2xl font-bold text-white">{step.number}</span>
                       </div>
@@ -162,14 +102,14 @@ export default function ServicosPage() {
               <div className="container-site flex items-center justify-between gap-8 flex-wrap">
                 <div>
                   <h2 className="font-heading text-[36px] font-bold leading-[46.8px] tracking-[-1px] text-primary-foreground capitalize max-w-[600px]">
-                    A mudança começa com uma conversa. Estamos aqui para ouvir.
+                    {cta.title}
                   </h2>
                 </div>
                 <Link
-                  href="/contactos/"
+                  href={cta.buttonHref}
                   className="inline-block bg-white text-primary font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-md hover:opacity-90 transition-opacity"
                 >
-                  Fale Connosco
+                  {cta.buttonLabel}
                 </Link>
               </div>
             </section>

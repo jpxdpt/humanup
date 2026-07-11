@@ -3,44 +3,16 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-const SLIDES = [
-  {
-    title: "Projetos de Felicidade Organizacional",
-    description:
-      "Criamos estratégias de bem-estar que ligam pessoas, cultura e resultados. <br>Cada plano é desenhado para transformar o ambiente de trabalho num espaço mais humano, produtivo e sustentável.",
-    buttonText: "Solicitar Diagnóstico",
-    buttonHref: "/contactos",
-  },
-  {
-    title: "Diagnóstico Organizacional",
-    description:
-      "Porque conhecer é o primeiro passo para transformar, analisamos o clima interno, os valores vividos e os pontos de melhoria.",
-    buttonText: "Saber mais",
-    buttonHref: "/servicos",
-  },
-  {
-    title: "Consultoria de <br>Bem-Estar",
-    description:
-      "Apoiamos líderes e equipas com soluções personalizadas que promovem saúde emocional, motivação e alinhamento cultural.<br>Criamos estratégias de bem-estar que ligam pessoas, cultura e resultados. Cada projeto é desenhado para transformar o ambiente de trabalho num espaço mais humano, produtivo e sustentável.",
-    buttonText: "Saber Mais",
-    buttonHref: "/servicos",
-  },
-  {
-    title: "Acompanhamento",
-    description:
-      "Oferecemos <strong>avaliação contínua</strong> das estratégias de bem-estar, com indicadores claros e feedback regular.<br>Acompanhamos líderes e equipas ao longo do processo, garantindo que a felicidade organizacional se traduz em resultados reais.",
-    buttonText: "Saber Mais",
-    buttonHref: "/servicos",
-  },
-];
+import { useContent } from "@/lib/content-store";
 
 export function ServicesSwiper() {
+  const { content } = useContent();
+  const SLIDES = content.home.services;
   const [activeIndex, setActiveIndex] = useState(1);
 
   const goTo = useCallback((index: number) => {
     setActiveIndex(((index % SLIDES.length) + SLIDES.length) % SLIDES.length);
-  }, []);
+  }, [SLIDES.length]);
 
   const prev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
   const next = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);

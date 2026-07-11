@@ -1,9 +1,13 @@
-import Link from "next/link";
+"use client";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { useContent } from "@/lib/content-store";
 
 export default function ContactosPage() {
+  const { content } = useContent();
+  const { contactos } = content;
   return (
     <div className="hfeed site flex flex-col min-h-screen">
       <SiteHeader />
@@ -18,9 +22,10 @@ export default function ContactosPage() {
               </video>
               <div className="container-site relative z-10 text-center">
                 <p className="font-sans text-lg font-medium text-white/80 mb-2">&nbsp;</p>
-                <h1 className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white">
-                  Fale <br />Connosco
-                </h1>
+                <h1
+                  className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white"
+                  dangerouslySetInnerHTML={{ __html: contactos.hero.title }}
+                />
               </div>
             </section>
 
@@ -29,23 +34,24 @@ export default function ContactosPage() {
               <div className="container-site grid grid-cols-1 md:grid-cols-2 gap-16">
                 {/* Left: Info */}
                 <div>
-                  <p className="font-sans text-base font-medium text-primary uppercase mb-2">Estamos Aqui Para o Ajudar</p>
+                  <p className="font-sans text-base font-medium text-primary uppercase mb-2">{contactos.eyebrow}</p>
                   <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize mb-12">
-                    Preencha o Formulário de Contacto
+                    {contactos.title}
                   </h2>
 
                   <div className="mb-8">
                     <h3 className="font-heading text-xl font-bold text-foreground mb-2">Email</h3>
                     <p className="font-sans text-base font-medium leading-[26.4px] text-foreground">
-                      geral.humanup@gmail.com<br />
-                      geral@humanup.pt
+                      {contactos.emailLines.map((line, i) => (
+                        <span key={i}>{line}<br /></span>
+                      ))}
                     </p>
                   </div>
 
                   <div className="mb-8">
                     <h3 className="font-heading text-xl font-bold text-foreground mb-2">Endereço</h3>
                     <p className="font-sans text-base font-medium leading-[26.4px] text-foreground">
-                      Espinho, Portugal
+                      {contactos.endereco}
                     </p>
                   </div>
                 </div>
@@ -103,7 +109,7 @@ export default function ContactosPage() {
                       type="submit"
                       className="w-full bg-primary text-primary-foreground font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
                     >
-                      Enviar Mensagem
+                      {contactos.formTitle}
                     </button>
                   </form>
                 </div>
