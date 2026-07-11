@@ -3,12 +3,13 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { DEFAULT_CONTENT } from "./content-schema";
 
 const dbPath = path.join(process.cwd(), "data", "humanup.db");
 
 function generateAccessCode(): string {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+  return randomBytes(9).toString("hex").toUpperCase();
 }
 
 declare global {
@@ -49,7 +50,7 @@ function migrate(db: Database.Database) {
       nome TEXT NOT NULL,
       email TEXT DEFAULT '',
       nif TEXT NOT NULL UNIQUE,
-      access_code TEXT NOT NULL,
+      access_code_hash TEXT NOT NULL,
       departamento TEXT DEFAULT '',
       cargo TEXT DEFAULT '',
       estado TEXT DEFAULT 'ativo'
@@ -94,12 +95,12 @@ function migrate(db: Database.Database) {
       { id: "col-5", empresaId: "emp-2", nome: "Miguel Oliveira", email: "moliveira@saudeplus.pt", nif: "567890123", departamento: "Administrativo", cargo: "Rececionista" },
     ];
     const insertColab = db.prepare(
-      "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code, departamento, cargo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code_hash, departamento, cargo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
     console.log("[seed] Códigos de acesso de colaborador (normalmente enviados por email):");
     for (const c of seedColaboradores) {
       const code = generateAccessCode();
-      insertColab.run(c.id, c.empresaId, c.nome, c.email, c.nif, code, c.departamento, c.cargo);
+      insertColab.run(c.id, c.empresaId, c.nome, c.email, c.nif, bcrypt.hashSync(code, 10), c.departamento, c.cargo);
       console.log(`  ${c.nome} (NIF ${c.nif}): ${code}`);
     }
   }

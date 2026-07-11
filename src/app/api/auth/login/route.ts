@@ -24,7 +24,7 @@ interface ColaboradorRow {
   nome: string;
   email: string;
   nif: string;
-  access_code: string;
+  access_code_hash: string;
 }
 
 export async function POST(request: Request) {
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
     const colab = db.prepare("SELECT * FROM colaboradores WHERE nif = ?").get(nif) as ColaboradorRow | undefined;
-    if (!colab || colab.access_code.toUpperCase() !== codigo.toUpperCase()) {
+    if (!colab || !bcrypt.compareSync(codigo.toUpperCase(), colab.access_code_hash)) {
       return NextResponse.json({ error: "Credenciais inválidas" }, { status: 401 });
     }
     const empresa = db.prepare("SELECT nome FROM empresas WHERE id = ?").get(colab.empresa_id) as { nome: string } | undefined;
