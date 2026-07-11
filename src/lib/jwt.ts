@@ -1,6 +1,10 @@
 import { SignJWT, jwtVerify } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || "dev-only-insecure-secret-change-me");
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is not set. Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+}
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export type SessionPayload = {
   sub: string;
