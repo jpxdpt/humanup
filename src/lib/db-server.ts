@@ -7,6 +7,10 @@ import { DEFAULT_CONTENT } from "./content-schema";
 
 const dbPath = path.join(process.cwd(), "data", "humanup.db");
 
+function generateAccessCode(): string {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __humanupDb: Database.Database | undefined;
@@ -45,6 +49,7 @@ function migrate(db: Database.Database) {
       nome TEXT NOT NULL,
       email TEXT DEFAULT '',
       nif TEXT NOT NULL UNIQUE,
+      access_code TEXT NOT NULL,
       departamento TEXT DEFAULT '',
       cargo TEXT DEFAULT '',
       estado TEXT DEFAULT 'ativo'
@@ -89,10 +94,13 @@ function migrate(db: Database.Database) {
       { id: "col-5", empresaId: "emp-2", nome: "Miguel Oliveira", email: "moliveira@saudeplus.pt", nif: "567890123", departamento: "Administrativo", cargo: "Rececionista" },
     ];
     const insertColab = db.prepare(
-      "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, departamento, cargo) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code, departamento, cargo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     );
+    console.log("[seed] Códigos de acesso de colaborador (normalmente enviados por email):");
     for (const c of seedColaboradores) {
-      insertColab.run(c.id, c.empresaId, c.nome, c.email, c.nif, c.departamento, c.cargo);
+      const code = generateAccessCode();
+      insertColab.run(c.id, c.empresaId, c.nome, c.email, c.nif, code, c.departamento, c.cargo);
+      console.log(`  ${c.nome} (NIF ${c.nif}): ${code}`);
     }
   }
 
