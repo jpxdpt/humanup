@@ -39,6 +39,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <NavItem href="/dashboard/admin?tab=questionarios" icon="description" label="Questionnaires" active={isActive("/dashboard/admin?tab=questionarios")} />
               <NavItem href="/dashboard/admin?tab=relatorios" icon="analytics" label="Reports" active={isActive("/dashboard/admin?tab=relatorios")} />
               <NavItem href="/dashboard/admin?tab=definicoes" icon="settings" label="Settings" active={isActive("/dashboard/admin?tab=definicoes")} />
+              <NavItem href="/areareservada" icon="edit_document" label="Área Reservada" active={isActive("/areareservada")} />
             </>
           )}
           {user?.role === "ceo" && (
