@@ -17,14 +17,14 @@ const TONE_STYLES: Record<NonNullable<StatementBlockProps["tone"]>, string> = {
 export function StatementBlock({ eyebrow, text, tone = "light" }: StatementBlockProps) {
   return (
     <section className={cn("w-full py-24 md:py-32", TONE_STYLES[tone])}>
-      <Reveal className="container-site max-w-[840px] mx-auto text-center">
+      <Reveal className="container-site max-w-[960px] mx-auto text-center">
         {eyebrow && (
           <p className="font-sans text-label-caps uppercase tracking-[0.15em] opacity-60 mb-6">
             {eyebrow}
           </p>
         )}
         <p
-          className="font-heading text-[28px] md:text-[42px] font-semibold leading-[1.3] tracking-[-0.5px]"
+          className="text-display-sm"
           dangerouslySetInnerHTML={{ __html: text }}
         />
       </Reveal>

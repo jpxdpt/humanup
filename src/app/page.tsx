@@ -10,6 +10,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { StatementBlock } from "@/components/StatementBlock";
 import { FullImageBand } from "@/components/FullImageBand";
+import { StatsMarquee } from "@/components/StatsMarquee";
 import { useContent } from "@/lib/content-store";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
         <main id="main">
           <article className="entry-content">
             <HeroSection />
+            <StatsMarquee />
             <StatementBlock text={whyInvest.title} />
             <ServicesSwiper />
             <FullImageBand

@@ -64,7 +64,7 @@ export function SplitContent({
             )}
             {title && (
               <h2
-                className="font-heading text-headline-lg md:text-[40px] font-bold leading-tight tracking-[-1px] mb-6"
+                className="text-display-sm mb-6"
                 dangerouslySetInnerHTML={{ __html: title }}
               />
             )}

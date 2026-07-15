@@ -24,7 +24,7 @@ export function PageHero({ image, imageAlt, eyebrow, title }: PageHeroProps) {
             </p>
           )}
           <h1
-            className="font-heading text-[40px] md:text-[64px] font-bold leading-[1.1] tracking-[0.02em] uppercase text-white"
+            className="text-display uppercase text-white"
             dangerouslySetInnerHTML={{ __html: title }}
           />
         </Reveal>

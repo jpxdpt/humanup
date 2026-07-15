@@ -6,7 +6,7 @@
 
 @theme inline {
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container: #e6eff8;
+  --color-surface-container: #f0f0f0;
   --color-on-error-container: #93000a;
   --color-on-primary-fixed: #2a1700;
   --color-tertiary-fixed: #e1e3e4;
@@ -16,42 +16,42 @@
   --color-on-primary-fixed-variant: #643e00;
   --color-on-secondary-fixed: #1a1c1e;
   --color-on-secondary-fixed-variant: #454749;
-  --color-surface-container-low: #ecf5fe;
+  --color-surface-container-low: #f7f7f7;
   --color-on-primary: #ffffff;
-  --color-surface-bright: #f6faff;
-  --color-outline-variant: #d7c3ae;
+  --color-surface-bright: #ffffff;
+  --color-outline-variant: #e3e3e3;
   --color-tertiary-fixed-dim: #c5c7c8;
-  --color-surface-variant: #dbe4ed;
+  --color-surface-variant: #ececec;
   --color-secondary-fixed: #e2e2e5;
   --color-on-primary-container: #633d00;
-  --color-inverse-surface: #293138;
+  --color-inverse-surface: #141414;
   --color-secondary-fixed-dim: #c6c6c9;
   --color-error: #ba1a1a;
   --color-tertiary-container: #b2b4b5;
   --color-primary-fixed: #ffddb7;
   --color-on-error: #ffffff;
   --color-surface-tint: #845400;
-  --color-on-surface: #141d23;
+  --color-on-surface: #141414;
   --color-on-secondary-container: #636467;
-  --color-surface-dim: #d2dbe4;
+  --color-surface-dim: #ececec;
   --color-error-container: #ffdad6;
-  --color-surface-container-high: #e0e9f2;
-  --color-background: #f6faff;
-  --color-surface-container-highest: #dbe4ed;
+  --color-surface-container-high: #ececec;
+  --color-background: #ffffff;
+  --color-surface-container-highest: #e3e3e3;
   --color-on-tertiary-fixed-variant: #454748;
-  --color-surface: #f6faff;
+  --color-surface: #ffffff;
   --color-on-tertiary-container: #434647;
   --color-secondary-container: #e2e2e5;
   --color-secondary: #5d5e61;
   --color-tertiary: #5c5f60;
-  --color-inverse-on-surface: #e9f2fb;
-  --color-on-surface-variant: #524435;
+  --color-inverse-on-surface: #f5f5f5;
+  --color-on-surface-variant: #404040;
   --color-on-tertiary: #ffffff;
   --color-inverse-primary: #ffb95c;
   --color-primary: #845400;
   --color-on-tertiary-fixed: #191c1d;
-  --color-on-background: #141d23;
-  --color-outline: #857462;
+  --color-on-background: #141414;
+  --color-outline: #737373;
 
   --font-body-sm: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-headline-lg: "Playfair Display", ui-serif, Georgia, serif;
@@ -128,8 +128,8 @@
 }
 
 :root {
-  --bg: #f6faff;
-  --on-surface: #141d23;
+  --bg: #ffffff;
+  --on-surface: #141414;
   --primary: #845400;
   --on-primary: #ffffff;
   --primary-container: #f3a32a;
@@ -140,19 +140,18 @@
   --on-tertiary: #ffffff;
   --error: #ba1a1a;
   --on-error: #ffffff;
-  --surface: #f6faff;
-  --on-surface: #141d23;
-  --surface-variant: #dbe4ed;
-  --on-surface-variant: #524435;
-  --outline: #857462;
-  --outline-variant: #d7c3ae;
+  --surface: #ffffff;
+  --surface-variant: #ececec;
+  --on-surface-variant: #404040;
+  --outline: #737373;
+  --outline-variant: #e3e3e3;
   --surface-container-lowest: #ffffff;
-  --surface-container-low: #ecf5fe;
-  --surface-container: #e6eff8;
-  --surface-container-high: #e0e9f2;
-  --surface-container-highest: #dbe4ed;
-  --surface-bright: #f6faff;
-  --surface-dim: #d2dbe4;
+  --surface-container-low: #f7f7f7;
+  --surface-container: #f0f0f0;
+  --surface-container-high: #ececec;
+  --surface-container-highest: #e3e3e3;
+  --surface-bright: #ffffff;
+  --surface-dim: #ececec;
   --primary-fixed: #ffddb7;
   --primary-fixed-dim: #ffb95c;
 }
@@ -174,6 +173,24 @@
   .section-gap {
     @apply py-16 md:py-24;
   }
+
+  .text-display {
+    font-size: clamp(2.75rem, 6vw, 7rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .text-display-sm {
+    font-size: clamp(2rem, 4vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .marquee-track {
+    animation: marquee 28s linear infinite;
+  }
 }
 
 .page-fade {
@@ -186,6 +203,15 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 

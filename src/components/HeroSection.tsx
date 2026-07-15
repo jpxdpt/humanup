@@ -33,8 +33,8 @@ export function HeroSection() {
 
       {/* Content */}
       <div className="container-site relative z-10 text-center">
-        <Reveal className="max-w-[720px] mx-auto">
-          <h1 className="font-heading text-[40px] md:text-[64px] font-bold leading-[1.1] tracking-[0.02em] uppercase text-white mb-6">
+        <Reveal className="max-w-[920px] mx-auto">
+          <h1 className="text-display uppercase text-white mb-8">
             {hero.title}
           </h1>
           <p className="font-sans text-base md:text-lg font-medium leading-[26.4px] text-white/85 mb-10 max-w-[560px] mx-auto">
