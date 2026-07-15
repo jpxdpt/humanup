@@ -18,7 +18,7 @@ export default function ContactosPage() {
 
             {/* Hero Banner */}
             <PageHero
-              image="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
+              image="/images/contact-hero.jpg"
               imageAlt="Contacte a HumanUp"
               title={contactos.hero.title}
             />

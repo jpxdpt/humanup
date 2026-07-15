@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { NavOverlay } from "@/components/NavOverlay";
 import { useContent } from "@/lib/content-store";
@@ -35,17 +36,17 @@ export function SiteHeader() {
     >
       <div className="container-site flex items-center justify-between h-[80px]">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-base">
-            H
-          </div>
-          <span
+          <Image
+            src="/images/logo-full.png"
+            alt="HumanUp"
+            width={140}
+            height={35}
             className={cn(
-              "font-headline-md text-headline-md font-bold tracking-tight transition-colors duration-300",
-              solid ? "text-primary" : "text-white",
+              "h-8 w-auto transition-all duration-300",
+              solid ? "opacity-100" : "opacity-100 brightness-0 invert",
             )}
-          >
-            {header.logoText}
-          </span>
+            priority
+          />
         </Link>
 
         <button
