@@ -20,7 +20,7 @@ export interface FlowSectionProps {
 
 export const FlowSection: React.FC<FlowSectionProps> = ({
   className,
-  style = {},
+  style,
   children,
   'aria-label': ariaLabel,
 }) => (
@@ -28,6 +28,7 @@ export const FlowSection: React.FC<FlowSectionProps> = ({
     data-flow-section
     aria-label={ariaLabel}
     className={cx('relative min-h-screen w-full overflow-hidden', className)}
+    style={{ contain: 'paint', ...style }}
   >
     <div
       data-flow-inner
@@ -35,7 +36,7 @@ export const FlowSection: React.FC<FlowSectionProps> = ({
         'flow-art-container relative flex min-h-screen w-full flex-col justify-between gap-6 px-[4vw] pt-[clamp(2rem,8vw,4vw)] pb-[4vw]',
         'will-change-transform',
       )}
-      style={{ transformOrigin: 'bottom left', ...style }}
+      style={{ transformOrigin: 'bottom left', backfaceVisibility: 'hidden' }}
     >
       {children}
     </div>
