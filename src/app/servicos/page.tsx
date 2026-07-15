@@ -4,7 +4,14 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SplitContent } from "@/components/SplitContent";
 import { useContent } from "@/lib/content-store";
+
+const PACKAGE_IMAGES = [
+  { src: "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg", alt: "Diagnóstico inicial" },
+  { src: "/images/emoji-card.jpg", alt: "Acompanhamento e workshops" },
+  { src: "/images/Diana-2-1-767x1024.png", alt: "Programa de liderança" },
+];
 
 export default function ServicosPage() {
   const { content } = useContent();
@@ -18,67 +25,53 @@ export default function ServicosPage() {
           <article className="entry-content">
 
             {/* Hero Banner */}
-            <section className="wp-block-uagb-container alignfull bg-gradient-to-br from-primary to-amber-600 py-16">
+            <section className="w-full bg-gradient-to-br from-primary to-amber-600 py-24 md:py-32">
               <div className="container-site text-center">
-                <p className="font-sans text-lg font-medium text-white/80 mb-2">{hero.eyebrow}</p>
-                <h1 className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white capitalize">
+                <p className="font-sans text-label-caps uppercase tracking-[0.05em] text-white/80 mb-4">{hero.eyebrow}</p>
+                <h1 className="font-heading text-[44px] md:text-[60px] font-bold leading-tight tracking-[-1px] text-white capitalize">
                   {hero.title}
                 </h1>
               </div>
             </section>
 
             {/* Packages */}
-            <section className="w-full bg-white py-20">
+            <section className="w-full bg-white py-16 md:py-24">
               <div className="container-site">
-                <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize text-center mb-16">
+                <h2 className="font-heading text-[32px] md:text-[46px] font-bold leading-tight tracking-[-1px] text-foreground capitalize text-center mb-4">
                   {packagesTitle}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                  {PACKAGES.map((pkg) => (
-                    <div
-                      key={pkg.name}
-                      className={`relative flex flex-col rounded-2xl p-8 border ${
-                        pkg.popular
-                          ? "border-primary bg-primary/5 shadow-lg scale-105"
-                          : "border-gray-200 bg-white"
-                      }`}
-                    >
-                      {pkg.popular && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full">
-                          Mais Popular
-                        </span>
-                      )}
-                      <h3 className="font-heading text-2xl font-bold text-foreground mb-8">{pkg.name}</h3>
-                      <ul className="flex-1 space-y-4 mb-8">
-                        {pkg.features.map((f, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 256 256">
-                              <path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
-                            </svg>
-                            <span className="font-sans text-base font-medium text-foreground">{f.text}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href={pkg.ctaHref}
-                        className={`text-center font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-md transition-opacity ${
-                          pkg.popular
-                            ? "bg-primary text-primary-foreground hover:opacity-90"
-                            : "bg-gray-100 text-foreground hover:bg-gray-200"
-                        }`}
-                      >
-                        {pkg.cta}
-                      </Link>
-                    </div>
-                  ))}
-                </div>
               </div>
             </section>
 
+            {PACKAGES.map((pkg, i) => (
+              <SplitContent
+                key={pkg.name}
+                image={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].src}
+                imageAlt={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].alt}
+                imagePosition={i % 2 === 0 ? "left" : "right"}
+                eyebrow={pkg.popular ? "Mais Popular" : undefined}
+                title={pkg.name}
+                body=""
+                ctaLabel={pkg.cta}
+                ctaHref={pkg.ctaHref}
+              >
+                <ul className="space-y-4 mb-8">
+                  {pkg.features.map((f, j) => (
+                    <li key={j} className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z" />
+                      </svg>
+                      <span className="font-sans text-base font-medium text-foreground">{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </SplitContent>
+            ))}
+
             {/* Method */}
-            <section className="w-full bg-gray-50 py-20">
+            <section className="w-full bg-gray-50 py-16 md:py-24">
               <div className="container-site">
-                <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize text-center mb-16">
+                <h2 className="font-heading text-[32px] md:text-[46px] font-bold leading-tight tracking-[-1px] text-foreground capitalize text-center mb-16">
                   {methodTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto">

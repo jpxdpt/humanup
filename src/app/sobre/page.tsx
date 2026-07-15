@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { SplitContent } from "@/components/SplitContent";
 import { useContent } from "@/lib/content-store";
 
 export default function SobrePage() {
@@ -18,63 +18,45 @@ export default function SobrePage() {
           <article className="entry-content">
 
             {/* Hero Banner */}
-            <section className="wp-block-uagb-container alignfull bg-[#f8b449] py-16">
+            <section className="w-full bg-[#f8b449] py-24 md:py-32">
               <div className="container-site text-center">
                 <p className="font-sans text-lg font-medium text-white/80 mb-2">{sobre.hero.eyebrow}</p>
-                <h1 className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white capitalize">
+                <h1 className="font-heading text-[44px] md:text-[60px] font-bold leading-tight tracking-[-1px] text-white capitalize">
                   {sobre.hero.title}
                 </h1>
               </div>
             </section>
 
             {/* Quem somos */}
-            <section className="w-full bg-white py-16">
-              <div className="container-site grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div className="order-2 md:order-1">
-                  <Image
-                    src="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
-                    alt="Equipe reunida"
-                    width={570}
-                    height={500}
-                    className="w-full h-auto object-cover rounded-lg"
-                  />
-                </div>
-                <div className="order-1 md:order-2">
-                  <span className="block font-sans text-base font-medium text-primary uppercase mb-2">{sobre.quemSomos.eyebrow}</span>
-                  <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize mb-6">
-                    {sobre.quemSomos.title}
-                  </h2>
-                  <p className="font-sans text-base font-medium leading-[26.4px] text-foreground whitespace-pre-line">
-                    {sobre.quemSomos.body}
-                  </p>
-                </div>
-              </div>
-            </section>
+            <SplitContent
+              image="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
+              imageAlt="Equipe reunida"
+              imagePosition="left"
+              eyebrow={sobre.quemSomos.eyebrow}
+              title={sobre.quemSomos.title}
+              body={sobre.quemSomos.body}
+            />
 
-            {/* Propósito & Missão */}
-            <section className="w-full bg-gray-50 py-16">
-              <div className="container-site grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="bg-white p-10 rounded-lg shadow-sm">
-                  <h2 className="font-heading text-[32px] font-bold leading-[41.6px] tracking-[-1px] text-foreground capitalize mb-4">
-                    {sobre.proposito.title}
-                  </h2>
-                  <p className="font-sans text-base font-medium leading-[26.4px] text-foreground">
-                    {sobre.proposito.body}
-                  </p>
-                </div>
-                <div className="bg-white p-10 rounded-lg shadow-sm">
-                  <h2 className="font-heading text-[32px] font-bold leading-[41.6px] tracking-[-1px] text-foreground capitalize mb-4">
-                    {sobre.missao.title}
-                  </h2>
-                  <p className="font-sans text-base font-medium leading-[26.4px] text-foreground">
-                    {sobre.missao.body}
-                  </p>
-                </div>
-              </div>
-            </section>
+            {/* Propósito */}
+            <SplitContent
+              image="/images/emoji-card.jpg"
+              imageAlt="Propósito HumanUp"
+              imagePosition="right"
+              title={sobre.proposito.title}
+              body={sobre.proposito.body}
+            />
+
+            {/* Missão */}
+            <SplitContent
+              image="/images/hero-bg.jpg"
+              imageAlt="Missão HumanUp"
+              imagePosition="left"
+              title={sobre.missao.title}
+              body={sobre.missao.body}
+            />
 
             {/* Valores & Visão */}
-            <section className="w-full bg-[#f8b449] py-20">
+            <section className="w-full bg-[#f8b449] py-16 md:py-24">
               <div className="container-site grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div>
                   <h2 className="font-heading text-[32px] font-bold leading-[41.6px] tracking-[-1px] text-white capitalize mb-8">
@@ -98,9 +80,9 @@ export default function SobrePage() {
             </section>
 
             {/* Como trabalhamos */}
-            <section className="w-full bg-white py-20">
+            <section className="w-full bg-white py-16 md:py-24">
               <div className="container-site">
-                <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-foreground capitalize text-center mb-16">
+                <h2 className="font-heading text-[32px] md:text-[46px] font-bold leading-tight tracking-[-1px] text-foreground capitalize text-center mb-16">
                   {sobre.comoTrabalhamosTitle}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -124,7 +106,7 @@ export default function SobrePage() {
             </section>
 
             {/* O que nos diferencia */}
-            <section className="w-full bg-gray-50 py-16 relative overflow-hidden">
+            <section className="w-full bg-gray-50 py-16 md:py-24 relative overflow-hidden">
               <div className="absolute inset-0">
                 <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-20">
                   <source src="/videos/about-bg.mp4" type="video/mp4" />

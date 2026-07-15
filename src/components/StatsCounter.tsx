@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useContent } from "@/lib/content-store";
 
@@ -66,13 +67,13 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
   const count = useCountUp(value, 1.5, isVisible);
 
   return (
-    <div ref={ref} className="mb-6">
-      <div className="wp-block-uagb-counter--number mb-1">
-        <span className="font-sans text-[46px] font-bold text-foreground">{count}</span>
-        <span className="font-sans text-[46px] font-bold text-foreground">{suffix}</span>
+    <div ref={ref}>
+      <div className="mb-1">
+        <span className="font-heading text-[46px] font-bold text-white">{count}</span>
+        <span className="font-heading text-[46px] font-bold text-white">{suffix}</span>
       </div>
       <p
-        className="font-sans text-base font-medium leading-[26.4px] text-foreground"
+        className="font-sans text-base font-medium leading-[26.4px] text-white/85"
         dangerouslySetInnerHTML={{ __html: label }}
       />
     </div>
@@ -82,20 +83,25 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
 export function StatsCounter() {
   const { content } = useContent();
   const { stats, statsSource } = content.home;
-  const columns = [stats.slice(0, 2), stats.slice(2, 4), stats.slice(4, 6)];
+
   return (
-    <section className="w-full bg-white py-8">
-      <div className="container-site">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {columns.map((col, i) => (
-            <div key={i}>
-              {col.map((stat, j) => (
-                <CounterItem key={j} {...stat} />
-              ))}
-            </div>
+    <section className="relative w-full bg-on-surface">
+      <div className="absolute inset-0">
+        <Image
+          src="/images/hero-bg.jpg"
+          alt=""
+          fill
+          className="object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-on-surface/70" />
+      </div>
+      <div className="relative container-site py-16 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
+          {stats.map((stat, i) => (
+            <CounterItem key={i} {...stat} />
           ))}
         </div>
-        <p className="font-sans text-sm font-medium text-primary mt-4">
+        <p className="font-sans text-sm font-medium text-white/70 mt-10">
           {statsSource}
         </p>
       </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { PageFade } from "@/components/PageFade";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,7 +44,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body-md text-on-surface bg-background antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <PageFade>{children}</PageFade>
+        </Providers>
       </body>
     </html>
   );
