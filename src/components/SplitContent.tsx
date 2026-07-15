@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Reveal } from "@/components/Reveal";
 
 interface SplitContentProps {
   image: string;
@@ -44,7 +45,7 @@ export function SplitContent({
           imagePosition === "right" && "md:[&>*:first-child]:order-2",
         )}
       >
-        <div className="relative min-h-[320px] md:min-h-full">
+        <Reveal className="relative min-h-[320px] md:min-h-full">
           <Image
             src={image}
             alt={imageAlt}
@@ -53,9 +54,9 @@ export function SplitContent({
             sizes="(min-width: 768px) 50vw, 100vw"
           />
           {imageTint && <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />}
-        </div>
+        </Reveal>
         <div className="flex items-center px-6 py-16 md:px-16 md:py-24">
-          <div className="max-w-[520px]">
+          <Reveal delay={120} className="max-w-[520px]">
             {eyebrow && (
               <span className="block font-sans text-label-caps uppercase tracking-[0.05em] mb-4 opacity-70">
                 {eyebrow}
@@ -85,7 +86,7 @@ export function SplitContent({
                 {ctaLabel}
               </Link>
             )}
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

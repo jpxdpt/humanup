@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { PageFade } from "@/components/PageFade";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body className="font-body-md text-on-surface bg-background antialiased">
         <Providers>
+          <SmoothScroll />
           <PageFade>{children}</PageFade>
         </Providers>
       </body>

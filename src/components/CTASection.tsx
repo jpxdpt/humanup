@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useContent } from "@/lib/content-store";
+import { Reveal } from "@/components/Reveal";
 
 export function CTASection() {
   const { content } = useContent();
   const { cta } = content.home;
   return (
     <section className="w-full bg-primary py-[100px]">
-      <div className="container-site">
+      <Reveal className="container-site">
         <div className="flex items-center justify-between gap-8 flex-wrap">
           <h2 className="font-heading text-[46px] font-bold leading-[55.2px] tracking-[-1px] text-primary-foreground capitalize max-w-[720px]">
             {cta.title}
@@ -22,7 +23,7 @@ export function CTASection() {
             </Link>
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
