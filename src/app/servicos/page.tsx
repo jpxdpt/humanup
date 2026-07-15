@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { PageHero } from "@/components/PageHero";
 import { FullImageBand } from "@/components/FullImageBand";
-import FlowArt from "@/components/FlowArt";
+import FlowArt from "@/components/ui/story-scroll";
 import { PackageFlowCard } from "@/components/PackageFlowCard";
 import { useContent } from "@/lib/content-store";
 

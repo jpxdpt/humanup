@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FlowSection } from "@/components/FlowArt";
+import { FlowSection } from "@/components/ui/story-scroll";
 import type { PackageItem } from "@/lib/content-schema";
 
 interface PackageFlowCardProps {
