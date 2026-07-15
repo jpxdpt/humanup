@@ -37,6 +37,9 @@ export function SplitContent({
   imageTint = false,
   children,
 }: SplitContentProps) {
+  const imageDirection = imagePosition === "left" ? "left" : "right";
+  const textDirection = imagePosition === "left" ? "right" : "left";
+
   return (
     <section className={cn("w-full", TONE_STYLES[tone])}>
       <div
@@ -45,7 +48,7 @@ export function SplitContent({
           imagePosition === "right" && "md:[&>*:first-child]:order-2",
         )}
       >
-        <Reveal className="relative min-h-[320px] md:min-h-full">
+        <Reveal direction={imageDirection} distance={64} className="relative min-h-[320px] md:min-h-full">
           <Image
             src={image}
             alt={imageAlt}
@@ -56,7 +59,7 @@ export function SplitContent({
           {imageTint && <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />}
         </Reveal>
         <div className="flex items-center px-6 py-16 md:px-16 md:py-24">
-          <Reveal delay={120} className="max-w-[520px]">
+          <Reveal direction={textDirection} delay={150} distance={48} className="max-w-[520px]">
             {eyebrow && (
               <span className="block font-sans text-label-caps uppercase tracking-[0.05em] mb-4 opacity-70">
                 {eyebrow}
