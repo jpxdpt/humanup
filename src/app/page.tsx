@@ -26,7 +26,7 @@ export default function Home() {
             <StatementBlock text={whyInvest.title} />
             <ServicesSwiper />
             <FullImageBand
-              image="/images/Duarte-1-767x1024.png"
+              image="/images/hero-bg.jpg"
               imageAlt="Equipa HumanUp"
               height="md"
             />

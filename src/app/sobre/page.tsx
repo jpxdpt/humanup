@@ -29,8 +29,8 @@ export default function SobrePage() {
 
             {/* Quem somos */}
             <SplitContent
-              image="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
-              imageAlt="Equipe reunida"
+              image="/images/Duarte-1-767x1024.png"
+              imageAlt="Equipa HumanUp"
               imagePosition="left"
               eyebrow={sobre.quemSomos.eyebrow}
               title={sobre.quemSomos.title}
@@ -38,9 +38,10 @@ export default function SobrePage() {
             />
 
             <FullImageBand
-              image="/images/Diana-2-1-767x1024.png"
-              imageAlt="Equipa HumanUp"
+              image="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
+              imageAlt="Impacto da felicidade organizacional"
               height="sm"
+              imageTint
             />
 
             {/* Propósito */}
@@ -48,7 +49,7 @@ export default function SobrePage() {
 
             {/* Missão */}
             <SplitContent
-              image="/images/emoji-card.jpg"
+              image="/images/Diana-2-1-767x1024.png"
               imageAlt="Missão HumanUp"
               imagePosition="right"
               title={sobre.missao.title}

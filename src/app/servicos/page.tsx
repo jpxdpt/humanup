@@ -10,9 +10,9 @@ import { FullImageBand } from "@/components/FullImageBand";
 import { useContent } from "@/lib/content-store";
 
 const PACKAGE_IMAGES = [
-  { src: "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg", alt: "Diagnóstico inicial" },
-  { src: "/images/emoji-card.jpg", alt: "Acompanhamento e workshops" },
-  { src: "/images/Diana-2-1-767x1024.png", alt: "Programa de liderança" },
+  { src: "/images/emoji-card.jpg", alt: "Diagnóstico e inquérito de felicidade", tint: false },
+  { src: "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg", alt: "Acompanhamento e impacto contínuo", tint: true },
+  { src: "/images/Diana-2-1-767x1024.png", alt: "Programa de liderança", tint: false },
 ];
 
 export default function ServicosPage() {
@@ -47,6 +47,7 @@ export default function ServicosPage() {
                 key={pkg.name}
                 image={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].src}
                 imageAlt={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].alt}
+                imageTint={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].tint}
                 imagePosition={i % 2 === 0 ? "left" : "right"}
                 tone={i % 2 === 0 ? "light" : "muted"}
                 eyebrow={pkg.popular ? "Mais Popular" : undefined}

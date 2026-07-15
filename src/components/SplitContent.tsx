@@ -12,6 +12,7 @@ interface SplitContentProps {
   ctaLabel?: string;
   ctaHref?: string;
   tone?: "light" | "muted" | "dark" | "primary";
+  imageTint?: boolean;
   children?: React.ReactNode;
 }
 
@@ -32,6 +33,7 @@ export function SplitContent({
   ctaLabel,
   ctaHref,
   tone = "light",
+  imageTint = false,
   children,
 }: SplitContentProps) {
   return (
@@ -50,6 +52,7 @@ export function SplitContent({
             className="object-cover"
             sizes="(min-width: 768px) 50vw, 100vw"
           />
+          {imageTint && <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />}
         </div>
         <div className="flex items-center px-6 py-16 md:px-16 md:py-24">
           <div className="max-w-[520px]">
