@@ -3,6 +3,7 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { PageHero } from "@/components/PageHero";
 import { useContent } from "@/lib/content-store";
 
 export default function ContactosPage() {
@@ -15,19 +16,12 @@ export default function ContactosPage() {
         <main id="main">
           <article className="entry-content">
 
-            {/* Hero Banner with video */}
-            <section className="relative flex flex-col justify-center items-center w-full min-h-[458px] overflow-hidden bg-gray-900">
-              <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
-                <source src="/videos/contact-bg.mp4" type="video/mp4" />
-              </video>
-              <div className="container-site relative z-10 text-center">
-                <p className="font-sans text-lg font-medium text-white/80 mb-2">&nbsp;</p>
-                <h1
-                  className="font-heading text-[60px] font-bold leading-[69px] tracking-[-1px] text-white"
-                  dangerouslySetInnerHTML={{ __html: contactos.hero.title }}
-                />
-              </div>
-            </section>
+            {/* Hero Banner */}
+            <PageHero
+              image="/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"
+              imageAlt="Contacte a HumanUp"
+              title={contactos.hero.title}
+            />
 
             {/* Contact Form + Info */}
             <section className="w-full bg-white py-16">

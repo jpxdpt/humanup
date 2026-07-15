@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SplitContent } from "@/components/SplitContent";
+import { PageHero } from "@/components/PageHero";
+import { FullImageBand } from "@/components/FullImageBand";
 import { useContent } from "@/lib/content-store";
 
 const PACKAGE_IMAGES = [
@@ -24,15 +26,12 @@ export default function ServicosPage() {
         <main id="main">
           <article className="entry-content">
 
-            {/* Hero Banner */}
-            <section className="w-full bg-gradient-to-br from-primary to-amber-600 py-24 md:py-32">
-              <div className="container-site text-center">
-                <p className="font-sans text-label-caps uppercase tracking-[0.05em] text-white/80 mb-4">{hero.eyebrow}</p>
-                <h1 className="font-heading text-[44px] md:text-[60px] font-bold leading-tight tracking-[-1px] text-white capitalize">
-                  {hero.title}
-                </h1>
-              </div>
-            </section>
+            <PageHero
+              image="/images/hero-bg.jpg"
+              imageAlt="HumanUp Serviços"
+              eyebrow={hero.eyebrow}
+              title={hero.title}
+            />
 
             {/* Packages */}
             <section className="w-full bg-white py-16 md:py-24">
@@ -49,6 +48,7 @@ export default function ServicosPage() {
                 image={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].src}
                 imageAlt={PACKAGE_IMAGES[i % PACKAGE_IMAGES.length].alt}
                 imagePosition={i % 2 === 0 ? "left" : "right"}
+                tone={i % 2 === 0 ? "light" : "muted"}
                 eyebrow={pkg.popular ? "Mais Popular" : undefined}
                 title={pkg.name}
                 body=""
@@ -67,6 +67,12 @@ export default function ServicosPage() {
                 </ul>
               </SplitContent>
             ))}
+
+            <FullImageBand
+              image="/images/Duarte-1-767x1024.png"
+              imageAlt="Equipa HumanUp"
+              height="sm"
+            />
 
             {/* Method */}
             <section className="w-full bg-gray-50 py-16 md:py-24">

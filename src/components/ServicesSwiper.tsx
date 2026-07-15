@@ -22,6 +22,7 @@ export function ServicesSwiper() {
           image={SLIDE_IMAGES[i % SLIDE_IMAGES.length].src}
           imageAlt={SLIDE_IMAGES[i % SLIDE_IMAGES.length].alt}
           imagePosition={i % 2 === 0 ? "left" : "right"}
+          tone={i % 2 === 0 ? "light" : "muted"}
           title={slide.title}
           body={slide.description}
           ctaLabel={slide.buttonText}

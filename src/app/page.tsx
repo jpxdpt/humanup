@@ -1,3 +1,5 @@
+"use client";
+
 import { SiteHeader } from "@/components/SiteHeader";
 import { HeroSection } from "@/components/HeroSection";
 import { ServicesSwiper } from "@/components/ServicesSwiper";
@@ -6,8 +8,14 @@ import { StatsCounter } from "@/components/StatsCounter";
 import { CTASection } from "@/components/CTASection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { StatementBlock } from "@/components/StatementBlock";
+import { FullImageBand } from "@/components/FullImageBand";
+import { useContent } from "@/lib/content-store";
 
 export default function Home() {
+  const { content } = useContent();
+  const { whyInvest } = content.home;
+
   return (
     <div className="hfeed site flex flex-col min-h-screen">
       <SiteHeader />
@@ -15,7 +23,13 @@ export default function Home() {
         <main id="main">
           <article className="entry-content">
             <HeroSection />
+            <StatementBlock text={whyInvest.title} />
             <ServicesSwiper />
+            <FullImageBand
+              image="/images/Duarte-1-767x1024.png"
+              imageAlt="Equipa HumanUp"
+              height="md"
+            />
             <WhyInvestSection />
             <StatsCounter />
             <CTASection />

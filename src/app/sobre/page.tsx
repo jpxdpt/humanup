@@ -5,6 +5,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SplitContent } from "@/components/SplitContent";
+import { PageHero } from "@/components/PageHero";
+import { StatementBlock } from "@/components/StatementBlock";
+import { FullImageBand } from "@/components/FullImageBand";
 import { useContent } from "@/lib/content-store";
 
 export default function SobrePage() {
@@ -17,15 +20,12 @@ export default function SobrePage() {
         <main id="main">
           <article className="entry-content">
 
-            {/* Hero Banner */}
-            <section className="w-full bg-[#f8b449] py-24 md:py-32">
-              <div className="container-site text-center">
-                <p className="font-sans text-lg font-medium text-white/80 mb-2">{sobre.hero.eyebrow}</p>
-                <h1 className="font-heading text-[44px] md:text-[60px] font-bold leading-tight tracking-[-1px] text-white capitalize">
-                  {sobre.hero.title}
-                </h1>
-              </div>
-            </section>
+            <PageHero
+              image="/images/hero-bg.jpg"
+              imageAlt="HumanUp"
+              eyebrow={sobre.hero.eyebrow}
+              title={sobre.hero.title}
+            />
 
             {/* Quem somos */}
             <SplitContent
@@ -37,20 +37,20 @@ export default function SobrePage() {
               body={sobre.quemSomos.body}
             />
 
-            {/* Propósito */}
-            <SplitContent
-              image="/images/emoji-card.jpg"
-              imageAlt="Propósito HumanUp"
-              imagePosition="right"
-              title={sobre.proposito.title}
-              body={sobre.proposito.body}
+            <FullImageBand
+              image="/images/Diana-2-1-767x1024.png"
+              imageAlt="Equipa HumanUp"
+              height="sm"
             />
+
+            {/* Propósito */}
+            <StatementBlock eyebrow={sobre.proposito.title} text={sobre.proposito.body} tone="muted" />
 
             {/* Missão */}
             <SplitContent
-              image="/images/hero-bg.jpg"
+              image="/images/emoji-card.jpg"
               imageAlt="Missão HumanUp"
-              imagePosition="left"
+              imagePosition="right"
               title={sobre.missao.title}
               body={sobre.missao.body}
             />

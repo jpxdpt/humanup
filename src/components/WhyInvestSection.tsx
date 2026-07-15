@@ -11,7 +11,6 @@ export function WhyInvestSection() {
       image="/images/emoji-card.jpg"
       imageAlt="Disposicao Da Vista Superior Com Um Cartao Emoji Sorridente"
       imagePosition="left"
-      title={whyInvest.title}
       body={whyInvest.body}
       ctaLabel={whyInvest.ctaLabel}
       ctaHref={whyInvest.ctaHref}

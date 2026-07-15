@@ -7,16 +7,17 @@ interface SplitContentProps {
   imageAlt: string;
   imagePosition: "left" | "right";
   eyebrow?: string;
-  title: string;
+  title?: string;
   body: string;
   ctaLabel?: string;
   ctaHref?: string;
-  tone?: "light" | "dark" | "primary";
+  tone?: "light" | "muted" | "dark" | "primary";
   children?: React.ReactNode;
 }
 
 const TONE_STYLES: Record<NonNullable<SplitContentProps["tone"]>, string> = {
   light: "bg-white text-foreground",
+  muted: "bg-gray-50 text-foreground",
   dark: "bg-on-surface text-white",
   primary: "bg-primary text-primary-foreground",
 };
@@ -57,10 +58,12 @@ export function SplitContent({
                 {eyebrow}
               </span>
             )}
-            <h2
-              className="font-heading text-headline-lg md:text-[40px] font-bold leading-tight tracking-[-1px] mb-6"
-              dangerouslySetInnerHTML={{ __html: title }}
-            />
+            {title && (
+              <h2
+                className="font-heading text-headline-lg md:text-[40px] font-bold leading-tight tracking-[-1px] mb-6"
+                dangerouslySetInnerHTML={{ __html: title }}
+              />
+            )}
             <div
               className="font-sans text-base font-medium leading-[26.4px] whitespace-pre-line mb-8 opacity-90"
               dangerouslySetInnerHTML={{ __html: body }}
