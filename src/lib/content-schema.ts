@@ -63,6 +63,9 @@ export interface SiteContent {
       ctaLabel: string;
       ctaHref: string;
     };
+    section02: { title: string; description: string };
+    section03: { title: string; description: string };
+    section04: { title: string; description: string };
     services: ServiceSlide[];
     whyInvest: {
       title: string;
@@ -135,6 +138,18 @@ export const DEFAULT_CONTENT: SiteContent = {
         "Potencie a produtividade e o bem-estar dos seus colaboradores com soluções de diagnóstico e projetos de bem‑estar laboral personalizados.",
       ctaLabel: "Saber Mais",
       ctaHref: "/sobre",
+    },
+    section02: {
+      title: "Felicidade\nOrganizacional\nem Portugal",
+      description: "Os números revelam um caminho urgente a percorrer na cultura empresarial portuguesa.",
+    },
+    section03: {
+      title: "Projetos\nde\nMudança",
+      description: "Estratégias de bem-estar que ligam pessoas, cultura e resultados.",
+    },
+    section04: {
+      title: "O Custo\nde\nNão Agir",
+      description: "Empresas que ignoram o bem-estar pagam um preço elevado — em produtividade, talento e resultados.",
     },
     services: [
       {

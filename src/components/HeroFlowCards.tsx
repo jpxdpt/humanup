@@ -91,18 +91,15 @@ export function HeroFlowCards() {
           <p className="text-xs font-bold uppercase tracking-[0.2em]">02 — O Problema</p>
           <hr className="my-[2vw] border-none border-t border-on-primary-container/20" />
           <div>
-            <h2 className="text-display uppercase">
-              Felicidade
-              <br />
-              Organizacional
-              <br />
-              em Portugal
-            </h2>
+            <EditableText contentKey="home.section02.title" tag="h2" className="text-display uppercase whitespace-pre-line" />
           </div>
           <hr className="my-[2vw] border-none border-t border-on-primary-container/20" />
-          <p className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-primary-container opacity-100">
-            Os números revelam um caminho urgente a percorrer na cultura empresarial portuguesa.
-          </p>
+          <EditableText
+            contentKey="home.section02.description"
+            tag="p"
+            className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-primary-container opacity-100 whitespace-pre-line"
+            multiline
+          />
           <hr className="my-[2vw] border-none border-t border-on-primary-container/20" />
           <div className="flex flex-wrap gap-[3vw]">
             {topStats.map((stat, i) => (
@@ -131,18 +128,15 @@ export function HeroFlowCards() {
           <p className="text-xs font-bold uppercase tracking-[0.2em]">03 — A Solução</p>
           <hr className="my-[2vw] border-none border-t border-on-surface/15" />
           <div>
-            <h2 className="text-display uppercase">
-              Projetos
-              <br />
-              de
-              <br />
-              Mudança
-            </h2>
+            <EditableText contentKey="home.section03.title" tag="h2" className="text-display uppercase whitespace-pre-line" />
           </div>
           <hr className="my-[2vw] border-none border-t border-on-surface/15" />
-          <p className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-surface">
-            Estratégias de bem-estar que ligam pessoas, cultura e resultados.
-          </p>
+          <EditableText
+            contentKey="home.section03.description"
+            tag="p"
+            className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-surface whitespace-pre-line"
+            multiline
+          />
           <hr className="my-[2vw] border-none border-t border-on-surface/15" />
           <div className="flex flex-wrap gap-[3vw]">
             {services.slice(0, 3).map((service, i) => (
@@ -176,18 +170,15 @@ export function HeroFlowCards() {
           <p className="text-xs font-bold uppercase tracking-[0.2em]">04 — O Impacto</p>
           <hr className="my-[2vw] border-none border-t border-on-primary/30" />
           <div>
-            <h2 className="text-display uppercase">
-              O Custo
-              <br />
-              de
-              <br />
-              Não Agir
-            </h2>
+            <EditableText contentKey="home.section04.title" tag="h2" className="text-display uppercase whitespace-pre-line" />
           </div>
           <hr className="my-[2vw] border-none border-t border-on-primary/30" />
-          <p className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-primary">
-            Empresas que ignoram o bem-estar pagam um preço elevado — em produtividade, talento e resultados.
-          </p>
+          <EditableText
+            contentKey="home.section04.description"
+            tag="p"
+            className="max-w-[50ch] text-base md:text-lg font-medium leading-relaxed text-on-primary whitespace-pre-line"
+            multiline
+          />
           <hr className="my-[2vw] border-none border-t border-on-primary/30" />
           <div className="flex flex-wrap gap-[3vw]">
             {bottomStats.map((stat, i) => (

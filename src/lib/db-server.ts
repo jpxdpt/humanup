@@ -177,6 +177,21 @@ async function migrate(pool: Pool) {
       );
     }
     console.log("[seed] site_content populated");
+  } else {
+    const items = flattenContent(DEFAULT_CONTENT);
+    for (const item of items) {
+      await pool.query(
+        "INSERT INTO site_content (key, value, label, section) VALUES ($1, $2, $3, $4) ON CONFLICT (key) DO NOTHING",
+        [item.key, item.value, item.label, item.section]
+      );
+    }
+    for (const [key, value] of Object.entries(DEFAULT_IMAGE_KEYS)) {
+      await pool.query(
+        "INSERT INTO site_content (key, value, label, section) VALUES ($1, $2, $3, $4) ON CONFLICT (key) DO NOTHING",
+        [key, value, humanizeKey(key), key.split(".")[0] || "imagens"]
+      );
+    }
+    console.log("[seed] site_content new keys inserted");
   }
 }
 

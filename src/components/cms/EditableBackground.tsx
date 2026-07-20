@@ -52,9 +52,9 @@ export function EditableBackground({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="absolute top-3 right-3 z-20 px-3 py-1.5 bg-[#141414]/80 text-white text-[11px] font-bold uppercase tracking-wider rounded-sm border border-white/30 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
+          className="fixed top-16 right-3 z-[9999] px-3 py-1.5 bg-[#141414]/90 text-white text-[11px] font-bold uppercase tracking-wider rounded-md border border-white/30 shadow-lg cursor-pointer"
         >
-          {uploading ? "..." : "Trocar Fundo"}
+          {uploading ? "..." : "🖼 Trocar Fundo"}
         </button>
       )}
       <input
