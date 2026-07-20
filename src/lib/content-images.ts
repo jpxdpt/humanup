@@ -1,0 +1,16 @@
+export const DEFAULT_IMAGE_KEYS: Record<string, string> = {
+  "header.logoImage": "/images/logo-full.png",
+  "home.hero.backgroundImage": "/images/hero-bg.jpg",
+  "home.section02.backgroundImage": "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg",
+  "home.section03.backgroundImage": "/images/contact-hero.jpg",
+  "home.section04.backgroundImage": "/images/emoji-top-view.jpg",
+  "home.section05.backgroundImage": "/images/grupo-de-amigos-reunidos.jpg",
+  "home.whyInvest.image": "/images/emoji-card.jpg",
+  "home.stats.backgroundImage": "/images/hero-bg.jpg",
+  "home.services.0.image": "/images/Duarte-1-767x1024.png",
+  "home.services.1.image": "/images/emoji-card.jpg",
+  "home.services.2.image": "/images/Diana-2-1-767x1024.png",
+  "home.services.3.image": "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg",
+  "sobre.hero.backgroundImage": "/images/hero-bg.jpg",
+  "contactos.hero.backgroundImage": "/images/contact-hero.jpg",
+};
