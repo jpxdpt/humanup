@@ -49,14 +49,13 @@ export function EditableBackground({
       />
       {overlay && <div className="absolute inset-0" style={{ backgroundColor: overlay }} />}
       {editMode && (
-        <div
+        <button
+          type="button"
           onClick={() => inputRef.current?.click()}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-primary/15 border-2 border-dashed border-primary opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+          className="absolute top-3 right-3 z-20 px-3 py-1.5 bg-[#141414]/80 text-white text-[11px] font-bold uppercase tracking-wider rounded-sm border border-white/30 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer"
         >
-          <span className="bg-primary text-primary-foreground px-4 py-2 text-xs font-bold uppercase rounded-sm">
-            {uploading ? "A enviar..." : "Trocar Fundo"}
-          </span>
-        </div>
+          {uploading ? "..." : "Trocar Fundo"}
+        </button>
       )}
       <input
         ref={inputRef}
