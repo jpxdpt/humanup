@@ -9,10 +9,14 @@ export function AdminBar() {
   const { user, logout } = useAuth();
   const { editMode, setEditMode } = useSiteContentContext();
 
+  if (typeof window !== "undefined") {
+    console.log("[AdminBar] user:", user, "editMode:", editMode);
+  }
+
   if (!user || user.role !== "admin") return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-on-surface border-t-2 border-primary text-white px-6 py-3 flex items-center gap-4">
+    <div data-lenis-prevent className="fixed bottom-0 left-0 right-0 z-[9999] bg-[#141414] border-t-2 border-[#845400] text-white px-6 py-3 flex items-center gap-4">
       <span className="text-xs font-bold uppercase tracking-widest text-primary">HumanUp Admin</span>
       <button
         type="button"
