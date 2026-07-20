@@ -1,13 +1,17 @@
 "use client";
 
 import { AuthProvider } from "@/lib/auth";
-import { ContentProvider } from "@/lib/content-store";
+import { SiteContentProvider } from "@/lib/site-content";
+import { AdminBar } from "@/components/cms/AdminBar";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <ContentProvider>{children}</ContentProvider>
+      <SiteContentProvider>
+        {children}
+        <AdminBar />
+      </SiteContentProvider>
     </AuthProvider>
   );
 }
