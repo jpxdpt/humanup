@@ -40,6 +40,14 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ editMode: boolean }>) => {
+      setEditMode(e.detail.editMode);
+    };
+    window.addEventListener("hup:editmode", handler as EventListener);
+    return () => window.removeEventListener("hup:editmode", handler as EventListener);
+  }, []);
+
   const saveContent = useCallback(async (key: string, value: string) => {
     const res = await fetch(`/api/content/${encodeURIComponent(key)}`, {
       method: "PUT",

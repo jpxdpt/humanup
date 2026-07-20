@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { PageFade } from "@/components/PageFade";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { AdminBar } from "@/components/cms/AdminBar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -49,6 +50,7 @@ export default function RootLayout({
           <SmoothScroll />
           <PageFade>{children}</PageFade>
         </Providers>
+        <AdminBar />
       </body>
     </html>
   );
