@@ -3,6 +3,8 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import { DEFAULT_CONTENT } from "./content-schema";
+import { flattenContent, humanizeKey } from "./content-utils";
+import { DEFAULT_IMAGE_KEYS } from "./content-images";
 
 function generateAccessCode(): string {
   return randomBytes(9).toString("hex").toUpperCase();
@@ -73,10 +75,44 @@ async function migrate(pool: Pool) {
     );
 
     CREATE TABLE IF NOT EXISTS site_content (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      data JSONB NOT NULL
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      label TEXT NOT NULL,
+      section TEXT NOT NULL
     );
   `);
+
+  const oldTable = await pool.query(`
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'site_content' AND column_name = 'data'
+  `);
+
+  if (Number(oldTable.rowCount) > 0) {
+    await pool.query("ALTER TABLE site_content RENAME TO site_content_legacy");
+    await pool.query(`
+      CREATE TABLE site_content (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        label TEXT NOT NULL,
+        section TEXT NOT NULL
+      );
+    `);
+
+    const legacy = await pool.query<{ data: unknown }>(
+      "SELECT data FROM site_content_legacy WHERE id = 1"
+    );
+    if (legacy.rowCount && legacy.rowCount > 0) {
+      const items = flattenContent(legacy.rows[0].data);
+      for (const item of items) {
+        await pool.query(
+          "INSERT INTO site_content (key, value, label, section) VALUES ($1, $2, $3, $4) ON CONFLICT (key) DO NOTHING",
+          [item.key, item.value, item.label, item.section]
+        );
+      }
+    }
+
+    await pool.query("DROP TABLE IF EXISTS site_content_legacy");
+  }
 
   const adminCount = await pool.query("SELECT COUNT(*) FROM admins");
   if (Number(adminCount.rows[0].count) === 0) {
@@ -125,9 +161,22 @@ async function migrate(pool: Pool) {
     }
   }
 
-  const contentRow = await pool.query("SELECT id FROM site_content WHERE id = 1");
-  if (contentRow.rowCount === 0) {
-    await pool.query("INSERT INTO site_content (id, data) VALUES (1, $1)", [JSON.stringify(DEFAULT_CONTENT)]);
+  const contentCount = await pool.query("SELECT COUNT(*) FROM site_content");
+  if (Number(contentCount.rows[0].count) === 0) {
+    const items = flattenContent(DEFAULT_CONTENT);
+    for (const item of items) {
+      await pool.query(
+        "INSERT INTO site_content (key, value, label, section) VALUES ($1, $2, $3, $4)",
+        [item.key, item.value, item.label, item.section]
+      );
+    }
+    for (const [key, value] of Object.entries(DEFAULT_IMAGE_KEYS)) {
+      await pool.query(
+        "INSERT INTO site_content (key, value, label, section) VALUES ($1, $2, $3, $4)",
+        [key, value, humanizeKey(key), key.split(".")[0] || "imagens"]
+      );
+    }
+    console.log("[seed] site_content populated");
   }
 }
 
