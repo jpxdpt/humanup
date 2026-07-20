@@ -13,7 +13,9 @@ interface EditableImageProps {
   fill?: boolean;
   width?: number;
   height?: number;
+  sizes?: string;
 }
+
 
 export function EditableImage({
   contentKey,
@@ -23,6 +25,7 @@ export function EditableImage({
   fill,
   width,
   height,
+  sizes,
 }: EditableImageProps) {
   const { content, editMode, saveContent } = useSiteContentContext();
   const src = content[contentKey] || fallback;
@@ -48,8 +51,8 @@ export function EditableImage({
   };
 
   const imageProps = fill
-    ? { fill: true as const, width: undefined, height: undefined }
-    : { width: width ?? 0, height: height ?? 0, fill: undefined };
+    ? { fill: true as const, width: undefined, height: undefined, sizes }
+    : { width: width ?? 0, height: height ?? 0, fill: undefined, sizes };
 
   if (!editMode) {
     return (
