@@ -1,19 +1,22 @@
 "use client";
 
 import { SplitContent } from "@/components/SplitContent";
-import { useContent } from "@/lib/content-store";
+import { useSiteContentSection, FALLBACKS } from "@/lib/site-content";
 
 export function WhyInvestSection() {
-  const { content } = useContent();
-  const { whyInvest } = content.home;
+  const home = useSiteContentSection("home");
+
   return (
     <SplitContent
-      image="/images/emoji-card.jpg"
+      imageKey="home.whyInvest.image"
+      imageFallback={FALLBACKS["home.whyInvest.image"]}
       imageAlt="Disposicao Da Vista Superior Com Um Cartao Emoji Sorridente"
       imagePosition="left"
-      body={whyInvest.body}
-      ctaLabel={whyInvest.ctaLabel}
-      ctaHref={whyInvest.ctaHref}
+      bodyKey="home.whyInvest.body"
+      bodyFallback={home["whyInvest.body"] ?? FALLBACKS["home.whyInvest.body"]}
+      ctaLabelKey="home.whyInvest.ctaLabel"
+      ctaLabelFallback={home["whyInvest.ctaLabel"] ?? FALLBACKS["home.whyInvest.ctaLabel"]}
+      ctaHref={home["whyInvest.ctaHref"] ?? FALLBACKS["home.whyInvest.ctaHref"]}
     />
   );
 }

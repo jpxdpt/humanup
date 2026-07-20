@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { useContent } from "@/lib/content-store";
+import { useSiteContentSection, FALLBACKS } from "@/lib/site-content";
+import { EditableImage } from "@/components/cms/EditableImage";
 
 function useCountUp(target: number, duration: number, isVisible: boolean) {
   const [current, setCurrent] = useState(0);
@@ -10,7 +10,6 @@ function useCountUp(target: number, duration: number, isVisible: boolean) {
 
   useEffect(() => {
     if (!isVisible) return;
-
     let startTime: number | null = null;
     let currentVal = 0;
 
@@ -21,7 +20,6 @@ function useCountUp(target: number, duration: number, isVisible: boolean) {
       const eased = 1 - Math.pow(1 - progress, 3);
       currentVal = target * eased;
       setCurrent(currentVal);
-
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(animate);
       } else {
@@ -30,7 +28,6 @@ function useCountUp(target: number, duration: number, isVisible: boolean) {
     }
 
     frameRef.current = requestAnimationFrame(animate);
-
     return () => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     };
@@ -49,7 +46,6 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -59,7 +55,6 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
       },
       { threshold: 0.3 },
     );
-
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -72,23 +67,30 @@ function CounterItem({ value, suffix, label }: { value: number; suffix: string; 
         <span className="font-heading text-[46px] font-bold text-white">{count}</span>
         <span className="font-heading text-[46px] font-bold text-white">{suffix}</span>
       </div>
-      <p
-        className="font-sans text-base font-medium leading-[26.4px] text-white/85"
-        dangerouslySetInnerHTML={{ __html: label }}
-      />
+      <p className="font-sans text-base font-medium leading-[26.4px] text-white/85 whitespace-pre-line">
+        {label}
+      </p>
     </div>
   );
 }
 
 export function StatsCounter() {
-  const { content } = useContent();
-  const { stats, statsSource } = content.home;
+  const home = useSiteContentSection("home");
+
+  const stats = Array.from({ length: 6 }, (_, i) => ({
+    value: Number(home[`stats.${i}.value`] ?? FALLBACKS[`home.stats.${i}.value`]),
+    suffix: home[`stats.${i}.suffix`] ?? FALLBACKS[`home.stats.${i}.suffix`],
+    label: home[`stats.${i}.label`] ?? FALLBACKS[`home.stats.${i}.label`],
+  }));
+
+  const statsSource = home["statsSource"] ?? FALLBACKS["home.statsSource"];
 
   return (
     <section className="relative w-full bg-on-surface">
       <div className="absolute inset-0">
-        <Image
-          src="/images/hero-bg.jpg"
+        <EditableImage
+          contentKey="home.stats.backgroundImage"
+          fallback={FALLBACKS["home.stats.backgroundImage"]}
           alt=""
           fill
           className="object-cover opacity-30"
@@ -101,9 +103,7 @@ export function StatsCounter() {
             <CounterItem key={i} {...stat} />
           ))}
         </div>
-        <p className="font-sans text-sm font-medium text-white/70 mt-10">
-          {statsSource}
-        </p>
+        <p className="font-sans text-sm font-medium text-white/70 mt-10">{statsSource}</p>
       </div>
     </section>
   );

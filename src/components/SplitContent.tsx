@@ -1,16 +1,22 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/Reveal";
+import { EditableImage } from "@/components/cms/EditableImage";
+import { EditableText } from "@/components/cms/EditableText";
 
 interface SplitContentProps {
-  image: string;
-  imageAlt: string;
+  imageKey: string;
+  imageFallback: string;
+  imageAlt?: string;
   imagePosition: "left" | "right";
-  eyebrow?: string;
-  title?: string;
-  body: string;
-  ctaLabel?: string;
+  titleKey?: string;
+  titleFallback?: string;
+  bodyKey: string;
+  bodyFallback: string;
+  ctaLabelKey?: string;
+  ctaLabelFallback?: string;
   ctaHref?: string;
   tone?: "light" | "muted" | "dark" | "primary";
   imageTint?: boolean;
@@ -25,13 +31,16 @@ const TONE_STYLES: Record<NonNullable<SplitContentProps["tone"]>, string> = {
 };
 
 export function SplitContent({
-  image,
-  imageAlt,
+  imageKey,
+  imageFallback,
+  imageAlt = "",
   imagePosition,
-  eyebrow,
-  title,
-  body,
-  ctaLabel,
+  titleKey,
+  titleFallback,
+  bodyKey,
+  bodyFallback,
+  ctaLabelKey,
+  ctaLabelFallback,
   ctaHref,
   tone = "light",
   imageTint = false,
@@ -49,8 +58,9 @@ export function SplitContent({
         )}
       >
         <Reveal direction={imageDirection} distance={64} className="relative min-h-[320px] md:min-h-full">
-          <Image
-            src={image}
+          <EditableImage
+            contentKey={imageKey}
+            fallback={imageFallback}
             alt={imageAlt}
             fill
             className="object-cover"
@@ -60,23 +70,23 @@ export function SplitContent({
         </Reveal>
         <div className="flex items-center px-6 py-16 md:px-16 md:py-24">
           <Reveal direction={textDirection} delay={150} distance={48} className="max-w-[520px]">
-            {eyebrow && (
-              <span className="block font-sans text-label-caps uppercase tracking-[0.05em] mb-4 opacity-70">
-                {eyebrow}
-              </span>
-            )}
-            {title && (
-              <h2
+            {titleKey && titleFallback && (
+              <EditableText
+                contentKey={titleKey}
+                fallback={titleFallback}
+                tag="h2"
                 className="text-display-sm mb-6"
-                dangerouslySetInnerHTML={{ __html: title }}
               />
             )}
-            <div
+            <EditableText
+              contentKey={bodyKey}
+              fallback={bodyFallback}
+              tag="div"
               className="font-sans text-base font-medium leading-[26.4px] whitespace-pre-line mb-8 opacity-90"
-              dangerouslySetInnerHTML={{ __html: body }}
+              multiline
             />
             {children}
-            {ctaLabel && ctaHref && (
+            {ctaLabelKey && ctaLabelFallback && ctaHref && (
               <Link
                 href={ctaHref}
                 className={cn(
@@ -86,7 +96,7 @@ export function SplitContent({
                     : "bg-primary text-primary-foreground",
                 )}
               >
-                {ctaLabel}
+                {ctaLabelFallback}
               </Link>
             )}
           </Reveal>

@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { NavOverlay } from "@/components/NavOverlay";
-import { useContent } from "@/lib/content-store";
+import { useSiteContentSection, FALLBACKS } from "@/lib/site-content";
+import { EditableImage } from "@/components/cms/EditableImage";
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { content } = useContent();
-  const { header } = content;
+  const header = useSiteContentSection("header");
 
   useEffect(() => {
     function onScroll() {
@@ -23,6 +22,13 @@ export function SiteHeader() {
   }, []);
 
   const solid = scrolled || menuOpen;
+
+  const navItems = [
+    { label: header["nav.0.label"] ?? FALLBACKS["header.nav.0.label"], href: header["nav.0.href"] ?? FALLBACKS["header.nav.0.href"] },
+    { label: header["nav.1.label"] ?? FALLBACKS["header.nav.1.label"], href: header["nav.1.href"] ?? FALLBACKS["header.nav.1.href"] },
+    { label: header["nav.2.label"] ?? FALLBACKS["header.nav.2.label"], href: header["nav.2.href"] ?? FALLBACKS["header.nav.2.href"] },
+    { label: header["nav.3.label"] ?? FALLBACKS["header.nav.3.label"], href: header["nav.3.href"] ?? FALLBACKS["header.nav.3.href"] },
+  ];
 
   return (
     <header
@@ -36,16 +42,16 @@ export function SiteHeader() {
     >
       <div className="container-site flex items-center justify-between h-[80px]">
         <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/images/logo-full.png"
-            alt="HumanUp"
+          <EditableImage
+            contentKey="header.logoImage"
+            fallback={FALLBACKS["header.logoImage"]}
+            alt={header.logoText ?? FALLBACKS["header.logoText"]}
             width={140}
             height={35}
             className={cn(
               "h-8 w-auto transition-all duration-300",
               solid ? "opacity-100" : "opacity-100 brightness-0 invert",
             )}
-            priority
           />
         </Link>
 
@@ -67,9 +73,9 @@ export function SiteHeader() {
       <NavOverlay
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        navItems={header.nav}
-        ctaLabel={header.ctaLabel}
-        ctaHref={header.ctaHref}
+        navItems={navItems}
+        ctaLabel={header.ctaLabel ?? FALLBACKS["header.ctaLabel"]}
+        ctaHref={header.ctaHref ?? FALLBACKS["header.ctaHref"]}
       />
     </header>
   );

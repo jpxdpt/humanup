@@ -11,6 +11,7 @@ export const DEFAULT_IMAGE_KEYS: Record<string, string> = {
   "home.services.1.image": "/images/emoji-card.jpg",
   "home.services.2.image": "/images/Diana-2-1-767x1024.png",
   "home.services.3.image": "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg",
+  "servicos.hero.backgroundImage": "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg",
   "sobre.hero.backgroundImage": "/images/hero-bg.jpg",
   "contactos.hero.backgroundImage": "/images/contact-hero.jpg",
 };

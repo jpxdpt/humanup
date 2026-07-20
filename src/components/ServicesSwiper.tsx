@@ -1,32 +1,44 @@
 "use client";
 
 import { SplitContent } from "@/components/SplitContent";
-import { useContent } from "@/lib/content-store";
+import { useSiteContentSection, FALLBACKS } from "@/lib/site-content";
 
-const SLIDE_IMAGES = [
-  { src: "/images/Duarte-1-767x1024.png", alt: "Consultor HumanUp", tint: false },
-  { src: "/images/emoji-card.jpg", alt: "Inquérito de felicidade organizacional", tint: false },
-  { src: "/images/Diana-2-1-767x1024.png", alt: "Consultora HumanUp", tint: false },
-  { src: "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg", alt: "Impacto e acompanhamento contínuo", tint: true },
+const IMAGE_ALTS = [
+  "Consultor HumanUp",
+  "Inquérito de felicidade organizacional",
+  "Consultora HumanUp",
+  "Impacto e acompanhamento contínuo",
 ];
 
+const IMAGE_TINTS = [false, false, false, true];
+
 export function ServicesSwiper() {
-  const { content } = useContent();
-  const SLIDES = content.home.services;
+  const home = useSiteContentSection("home");
+
+  const slides = Array.from({ length: 4 }, (_, i) => ({
+    title: home[`services.${i}.title`] ?? FALLBACKS[`home.services.${i}.title`],
+    description: home[`services.${i}.description`] ?? FALLBACKS[`home.services.${i}.description`],
+    buttonText: home[`services.${i}.buttonText`] ?? FALLBACKS[`home.services.${i}.buttonText`],
+    buttonHref: home[`services.${i}.buttonHref`] ?? FALLBACKS[`home.services.${i}.buttonHref`],
+  }));
 
   return (
     <div>
-      {SLIDES.map((slide, i) => (
+      {slides.map((slide, i) => (
         <SplitContent
           key={i}
-          image={SLIDE_IMAGES[i % SLIDE_IMAGES.length].src}
-          imageAlt={SLIDE_IMAGES[i % SLIDE_IMAGES.length].alt}
-          imageTint={SLIDE_IMAGES[i % SLIDE_IMAGES.length].tint}
+          imageKey={`home.services.${i}.image`}
+          imageFallback={FALLBACKS[`home.services.${i}.image`]}
+          imageAlt={IMAGE_ALTS[i % IMAGE_ALTS.length]}
+          imageTint={IMAGE_TINTS[i % IMAGE_TINTS.length]}
           imagePosition={i % 2 === 0 ? "left" : "right"}
           tone={i % 2 === 0 ? "light" : "muted"}
-          title={slide.title}
-          body={slide.description}
-          ctaLabel={slide.buttonText}
+          titleKey={`home.services.${i}.title`}
+          titleFallback={slide.title}
+          bodyKey={`home.services.${i}.description`}
+          bodyFallback={slide.description}
+          ctaLabelKey={`home.services.${i}.buttonText`}
+          ctaLabelFallback={slide.buttonText}
           ctaHref={slide.buttonHref}
         />
       ))}
