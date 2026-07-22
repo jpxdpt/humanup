@@ -39,6 +39,71 @@ function getPool(): Pool {
 
 async function migrate(pool: Pool) {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS admins (
+      id TEXT PRIMARY KEY,
+      nome TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      cargo TEXT DEFAULT '',
+      tel TEXT DEFAULT '',
+      password_hash TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS empresas (
+      id TEXT PRIMARY KEY,
+      nome TEXT NOT NULL,
+      nif TEXT NOT NULL UNIQUE,
+      pacote TEXT DEFAULT 'Essencial',
+      ncolab INTEGER DEFAULT 0,
+      estado TEXT DEFAULT 'ativo',
+      ceo_nome TEXT NOT NULL,
+      ceo_email TEXT NOT NULL UNIQUE,
+      ceo_cargo TEXT DEFAULT '',
+      ceo_tel TEXT DEFAULT '',
+      ceo_password_hash TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS colaboradores (
+      id TEXT PRIMARY KEY,
+      empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+      nome TEXT NOT NULL,
+      email TEXT DEFAULT '',
+      nif TEXT NOT NULL UNIQUE,
+      access_code_hash TEXT NOT NULL,
+      departamento TEXT DEFAULT '',
+      cargo TEXT DEFAULT '',
+      estado TEXT DEFAULT 'ativo'
+    );
+
+    CREATE TABLE IF NOT EXISTS site_content (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      label TEXT NOT NULL,
+      section TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      user_id TEXT,
+      role TEXT DEFAULT 'admin',
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT DEFAULT 'info',
+      read BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      token TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS questionarios (
       id TEXT PRIMARY KEY,
       titulo TEXT NOT NULL,
@@ -100,69 +165,6 @@ async function migrate(pool: Pool) {
       id SERIAL PRIMARY KEY,
       envio_id TEXT REFERENCES envios(id) ON DELETE CASCADE,
       texto TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT now()
-    );
-
-    CREATE TABLE IF NOT EXISTS admins (
-      id TEXT PRIMARY KEY,
-      nome TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      cargo TEXT DEFAULT '',
-      tel TEXT DEFAULT '',
-      password_hash TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS empresas (
-      id TEXT PRIMARY KEY,
-      nome TEXT NOT NULL,
-      nif TEXT NOT NULL UNIQUE,
-      pacote TEXT DEFAULT 'Essencial',
-      ncolab INTEGER DEFAULT 0,
-      estado TEXT DEFAULT 'ativo',
-      ceo_nome TEXT NOT NULL,
-      ceo_email TEXT NOT NULL UNIQUE,
-      ceo_cargo TEXT DEFAULT '',
-      ceo_tel TEXT DEFAULT '',
-      ceo_password_hash TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS colaboradores (
-      id TEXT PRIMARY KEY,
-      empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
-      nome TEXT NOT NULL,
-      email TEXT DEFAULT '',
-      nif TEXT NOT NULL UNIQUE,
-      access_code_hash TEXT NOT NULL,
-      departamento TEXT DEFAULT '',
-      cargo TEXT DEFAULT '',
-      estado TEXT DEFAULT 'ativo'
-    );
-
-    CREATE TABLE IF NOT EXISTS site_content (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL,
-      label TEXT NOT NULL,
-      section TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS notifications (
-      id SERIAL PRIMARY KEY,
-      user_id TEXT,
-      role TEXT DEFAULT 'admin',
-      title TEXT NOT NULL,
-      message TEXT NOT NULL,
-      type TEXT DEFAULT 'info',
-      read BOOLEAN DEFAULT false,
-      created_at TIMESTAMPTZ DEFAULT now()
-    );
-
-    CREATE TABLE IF NOT EXISTS password_reset_tokens (
-      id SERIAL PRIMARY KEY,
-      email TEXT NOT NULL,
-      token TEXT NOT NULL UNIQUE,
-      role TEXT NOT NULL,
-      expires_at TIMESTAMPTZ NOT NULL,
-      used BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ DEFAULT now()
     );
   `);
