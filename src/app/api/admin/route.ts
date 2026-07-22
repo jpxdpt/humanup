@@ -196,13 +196,47 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, results });
       }
 
+      // --- Empresas CRUD ---
+      case "empresa_list": {
+        const result = await db.query("SELECT * FROM empresas ORDER BY nome");
+        return NextResponse.json({ success: true, data: result.rows });
+      }
+      case "empresa_insert": {
+        const { nome, nif, pacote, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, ceo_password } = body;
+        const id = randomUUID();
+        const hash = bcrypt.hashSync(ceo_password || "hup123", 10);
+        await db.query(
+          "INSERT INTO empresas (id, nome, nif, pacote, ncolab, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, ceo_password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+          [id, nome, nif, pacote || "Essencial", 0, estado || "ativo", ceo_nome, ceo_email, ceo_cargo || "", ceo_tel || "", hash]
+        );
+        return NextResponse.json({ success: true, id });
+      }
+      case "empresa_update": {
+        const { id, nome, nif, pacote, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, ceo_password } = body;
+        if (ceo_password) {
+          const hash = bcrypt.hashSync(ceo_password, 10);
+          await db.query(
+            "UPDATE empresas SET nome=$1, nif=$2, pacote=$3, estado=$4, ceo_nome=$5, ceo_email=$6, ceo_cargo=$7, ceo_tel=$8, ceo_password_hash=$9 WHERE id=$10",
+            [nome, nif, pacote, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, hash, id]
+          );
+        } else {
+          await db.query(
+            "UPDATE empresas SET nome=$1, nif=$2, pacote=$3, estado=$4, ceo_nome=$5, ceo_email=$6, ceo_cargo=$7, ceo_tel=$8 WHERE id=$9",
+            [nome, nif, pacote, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, id]
+          );
+        }
+        return NextResponse.json({ success: true });
+      }
+      case "empresa_delete": {
+        await db.query("DELETE FROM empresas WHERE id = $1", [body.id]);
+        return NextResponse.json({ success: true });
+      }
+
       // --- Dashboard Admin Stats ---
       case "dashboard_admin": {
         const empresasResult = await db.query("SELECT COUNT(*) FROM empresas");
         const colabsResult = await db.query("SELECT COUNT(*) FROM colaboradores");
         const enviosResult = await db.query("SELECT COUNT(*) FROM envios");
-        const faturasPendentes = await db.query("SELECT COUNT(*) FROM faturas WHERE estado = 'pendente'");
-        const totalPorReceber = await db.query("SELECT COALESCE(SUM(valor), 0) FROM faturas WHERE estado = 'pendente' OR estado = 'em_atraso'");
         const empresasAtivas = await db.query("SELECT COUNT(*) FROM empresas WHERE estado = 'ativo'");
         return NextResponse.json({
           success: true,
@@ -211,8 +245,8 @@ export async function POST(request: NextRequest) {
             empresasAtivas: parseInt(empresasAtivas.rows[0].count),
             totalColaboradores: parseInt(colabsResult.rows[0].count),
             totalEnvios: parseInt(enviosResult.rows[0].count),
-            faturasPendentes: parseInt(faturasPendentes.rows[0].count),
-            totalPorReceber: parseFloat(totalPorReceber.rows[0].coalesce),
+            faturasPendentes: 0,
+            totalPorReceber: 0,
           },
         });
       }
