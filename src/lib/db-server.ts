@@ -1,14 +1,9 @@
 import "server-only";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
-import { randomBytes } from "crypto";
 import { DEFAULT_CONTENT } from "./content-schema";
 import { flattenContent, humanizeKey } from "./content-utils";
 import { DEFAULT_IMAGE_KEYS } from "./content-images";
-
-function generateAccessCode(): string {
-  return randomBytes(9).toString("hex").toUpperCase();
-}
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -208,40 +203,8 @@ async function migrate(pool: Pool) {
     console.log("[seed] Admin password synced with env var");
   }
 
-  const empresaCount = await pool.query("SELECT COUNT(*) FROM empresas");
-  if (Number(empresaCount.rows[0].count) === 0) {
-    const seedEmpresas = [
-      { id: "emp-1", nome: "Tech Solutions Lda", nif: "500123456", pacote: "GO-UP", ncolab: 3, estado: "ativo", ceoNome: "Maria João Ferreira", ceoEmail: "mjferreira@techsolutions.pt", ceoCargo: "CEO", ceoTel: "+351 912 345 678", pass: "hup123" },
-      { id: "emp-2", nome: "Saúde Plus SA", nif: "500654321", pacote: "GROW-UP", ncolab: 2, estado: "ativo", ceoNome: "Pedro Santos", ceoEmail: "psantos@saudeplus.pt", ceoCargo: "Diretor Geral", ceoTel: "+351 913 456 789", pass: "hup456" },
-      { id: "emp-3", nome: "InnovaTech", nif: "500789123", pacote: "START-UP", ncolab: 1, estado: "inativo", ceoNome: "Ana Costa", ceoEmail: "acosta@innovatech.pt", ceoCargo: "CEO", ceoTel: "+351 914 567 890", pass: "hup789" },
-    ];
-    for (const e of seedEmpresas) {
-      await pool.query(
-        "INSERT INTO empresas (id, nome, nif, pacote, ncolab, estado, ceo_nome, ceo_email, ceo_cargo, ceo_tel, ceo_password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
-        [e.id, e.nome, e.nif, e.pacote, e.ncolab, e.estado, e.ceoNome, e.ceoEmail, e.ceoCargo, e.ceoTel, bcrypt.hashSync(e.pass, 10)]
-      );
-    }
-  }
-
-  const colabCount = await pool.query("SELECT COUNT(*) FROM colaboradores");
-  if (Number(colabCount.rows[0].count) === 0) {
-    const seedColaboradores = [
-      { id: "col-1", empresaId: "emp-1", nome: "João Silva", email: "jsilva@techsolutions.pt", nif: "123456789", departamento: "Tecnologia", cargo: "Desenvolvedor" },
-      { id: "col-2", empresaId: "emp-1", nome: "Maria Costa", email: "mcosta@techsolutions.pt", nif: "234567890", departamento: "Comercial", cargo: "Account Manager" },
-      { id: "col-3", empresaId: "emp-1", nome: "Rui Mendes", email: "rmendes@techsolutions.pt", nif: "345678901", departamento: "Recursos Humanos", cargo: "RH Generalista" },
-      { id: "col-4", empresaId: "emp-2", nome: "Carla Sousa", email: "csousa@saudeplus.pt", nif: "456789012", departamento: "Clínica", cargo: "Enfermeira" },
-      { id: "col-5", empresaId: "emp-2", nome: "Miguel Oliveira", email: "moliveira@saudeplus.pt", nif: "567890123", departamento: "Administrativo", cargo: "Rececionista" },
-    ];
-    console.log("[seed] Códigos de acesso de colaborador (normalmente enviados por email):");
-    for (const c of seedColaboradores) {
-      const code = generateAccessCode();
-      await pool.query(
-        "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code_hash, departamento, cargo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-        [c.id, c.empresaId, c.nome, c.email, c.nif, bcrypt.hashSync(code, 10), c.departamento, c.cargo]
-      );
-      console.log(`  ${c.nome} (NIF ${c.nif}): ${code}`);
-    }
-  }
+  await pool.query("DELETE FROM colaboradores WHERE id IN ('col-1','col-2','col-3','col-4','col-5')");
+  await pool.query("DELETE FROM empresas WHERE id IN ('emp-1','emp-2','emp-3')");
 
   const contentCount = await pool.query("SELECT COUNT(*) FROM site_content");
   if (Number(contentCount.rows[0].count) === 0) {
