@@ -229,7 +229,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-container-padding bg-background pb-20">
+        <main data-lenis-prevent className="flex-1 overflow-y-auto p-4 md:p-container-padding bg-background pb-20">
           <div className="max-w-[1440px] mx-auto">
             {children}
           </div>
