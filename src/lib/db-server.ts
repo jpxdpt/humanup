@@ -199,6 +199,13 @@ async function migrate(pool: Pool) {
       ["admin-1", process.env.ADMIN_NAME || "Administrador", email, "Administrador", "", hash]
     );
     console.log(`[seed] Admin criado: ${email}`);
+  } else {
+    const hash = bcrypt.hashSync(requireEnv("ADMIN_PASSWORD"), 10);
+    await pool.query(
+      "UPDATE admins SET password_hash = $1 WHERE id = 'admin-1'",
+      [hash]
+    );
+    console.log("[seed] Admin password synced with env var");
   }
 
   const empresaCount = await pool.query("SELECT COUNT(*) FROM empresas");
