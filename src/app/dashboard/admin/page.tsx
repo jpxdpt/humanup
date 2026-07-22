@@ -102,52 +102,28 @@ function AdminDashboardContent() {
             <KpiCard label="Faturas Pendentes" value={String(faturasPendentes)} sub={totalPorReceber > 0 ? "\u20AC " + totalPorReceber : "Tudo regularizado"} icon="receipt_long" />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-card-gap">
-            <div className="xl:col-span-8 flex flex-col gap-card-gap">
-              <Panel title="Bem-vindo ao HumanUp" subtitle="Painel de administracao">
-                <div className="flex items-center gap-4 p-4 bg-primary-container/20 rounded-lg border border-primary/20">
-                  <span className="material-symbols-outlined text-3xl text-primary">admin_panel_settings</span>
-                  <div>
-                    <p className="font-body-md text-body-md text-on-surface mb-1">
-                      Utilize o menu acima para navegar entre as seccoes.
-                    </p>
-                    <p className="font-body-sm text-body-sm text-secondary">
-                      Crie questionarios, envie para as empresas, importe colaboradores e acompanhe os resultados.
-                    </p>
+          <Panel title="Atalhos">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[
+                { icon: "description", label: "Criar questionario", tab: "questionarios" },
+                { icon: "send", label: "Enviar questionario", tab: "envios" },
+                { icon: "person_add", label: "Importar colaboradores", tab: "colaboradores" },
+                { icon: "forum", label: "Mensagens", tab: "mensagens" },
+                { icon: "settings", label: "Definicoes", tab: "definicoes" },
+              ].map((item) => (
+                <button
+                  key={item.tab}
+                  onClick={() => router.push("/dashboard/admin?tab=" + item.tab)}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-outline-variant hover:border-primary hover:bg-surface-bright transition-all text-center group cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
                   </div>
-                </div>
-              </Panel>
+                  <span className="font-button text-button text-on-surface">{item.label}</span>
+                </button>
+              ))}
             </div>
-
-            <div className="xl:col-span-4">
-              <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm h-full flex flex-col">
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
-                  <h3 className="font-label-caps text-label-caps text-secondary uppercase tracking-wider">Atalhos</h3>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {[
-                    { icon: "description", label: "Criar questionario", tab: "questionarios" },
-                    { icon: "send", label: "Enviar questionario", tab: "envios" },
-                    { icon: "person_add", label: "Importar colaboradores", tab: "colaboradores" },
-                    { icon: "forum", label: "Mensagens", tab: "mensagens" },
-                    { icon: "settings", label: "Definicoes", tab: "definicoes" },
-                  ].map((item) => (
-                    <button
-                      key={item.tab}
-                      onClick={() => router.push("/dashboard/admin?tab=" + item.tab)}
-                      className="w-full flex items-center gap-3 p-4 rounded-lg border border-outline-variant hover:border-primary hover:bg-surface-bright transition-all text-left group cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                      </div>
-                      <span className="font-button text-button text-on-surface">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          </Panel>
         </>
       )}
 
