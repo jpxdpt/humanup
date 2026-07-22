@@ -16,10 +16,15 @@ const HEIGHT_STYLES: Record<NonNullable<FullImageBandProps["height"]>, string> =
 };
 
 export function FullImageBand({ image, imageAlt, height = "md", imageTint = false }: FullImageBandProps) {
+  const isSvg = image.endsWith(".svg");
   return (
     <section className={cn("relative w-full overflow-hidden", HEIGHT_STYLES[height])}>
       <Parallax strength={0.12} className="absolute inset-0">
-        <Image src={image} alt={imageAlt} fill className="object-cover" sizes="100vw" />
+        {isSvg ? (
+          <img src={image} alt={imageAlt} className="w-full h-full object-cover" />
+        ) : (
+          <Image src={image} alt={imageAlt} fill className="object-cover" sizes="100vw" />
+        )}
         {imageTint && <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />}
       </Parallax>
     </section>

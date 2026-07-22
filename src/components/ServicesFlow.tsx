@@ -47,7 +47,7 @@ export function ServicesFlow() {
       {/* Hero */}
       <EditableBackground
         contentKey="servicos.hero.backgroundImage"
-        fallback={FALLBACKS["servicos.hero.backgroundImage"] ?? "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.jpg"}
+        fallback={FALLBACKS["servicos.hero.backgroundImage"] ?? "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.svg"}
         overlay="rgba(0,0,0,0.5)"
         className="relative flex flex-col justify-center items-center w-full min-h-screen overflow-hidden bg-on-surface text-white"
       >

@@ -55,26 +55,37 @@ export function EditableImage({
     ? { fill: true as const, width: undefined, height: undefined, sizes }
     : { width: width ?? 0, height: height ?? 0, fill: undefined, sizes };
 
-  if (!editMode) {
+  const isSvg = src.endsWith(".svg");
+
+  function renderImage(classNameOverride?: string, style?: React.CSSProperties) {
+    if (isSvg) {
+      return (
+        <img
+          src={src}
+          alt={alt}
+          className={cn("object-cover", classNameOverride || className)}
+          style={style}
+        />
+      );
+    }
     return (
       <Image
         src={src}
         alt={alt}
-        className={cn("object-cover", className)}
+        className={cn("object-cover", classNameOverride || className)}
+        style={style}
         {...imageProps}
       />
     );
   }
 
+  if (!editMode) {
+    return renderImage();
+  }
+
   return (
     <div className={cn("relative inline-block", fill && "w-full h-full")}>
-      <Image
-        src={src}
-        alt={alt}
-        className={cn("object-cover", className)}
-        style={{ opacity: uploading ? 0.5 : 1 }}
-        {...imageProps}
-      />
+      {renderImage(undefined, { opacity: uploading ? 0.5 : 1 })}
       <div
         onClick={() => inputRef.current?.click()}
         className="absolute inset-0 flex items-center justify-center bg-primary/15 border-2 border-dashed border-primary opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
