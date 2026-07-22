@@ -1,5 +1,5 @@
 export const DEFAULT_IMAGE_KEYS: Record<string, string> = {
-  "header.logoImage": "/images/logo-full.png",
+  "header.logoImage": "/images/logo-full.svg",
   "home.hero.backgroundImage": "/images/hero-bg.svg",
   "home.section02.backgroundImage": "/images/sigmund-HKr9cdfrbOo-unsplash-1024x683.svg",
   "home.section03.backgroundImage": "/images/contact-hero.svg",

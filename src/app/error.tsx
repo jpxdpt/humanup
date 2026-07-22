@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 
 export default function ErrorPage({
   error,
@@ -17,8 +16,8 @@ export default function ErrorPage({
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <div className="max-w-md text-center space-y-6">
-        <Image
-          src="/images/logo.png"
+        <img
+          src="/images/logo-full.svg"
           alt="HumanUp"
           width={120}
           height={40}
