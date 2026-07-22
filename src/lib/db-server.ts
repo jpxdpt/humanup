@@ -80,6 +80,27 @@ async function migrate(pool: Pool) {
       label TEXT NOT NULL,
       section TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id SERIAL PRIMARY KEY,
+      user_id TEXT,
+      role TEXT DEFAULT 'admin',
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT DEFAULT 'info',
+      read BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL,
+      token TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
   `);
 
   const oldTable = await pool.query(`

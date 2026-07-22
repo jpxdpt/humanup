@@ -1,14 +1,4 @@
-export interface NavItem {
-  label: string;
-  href: string;
-}
-
-export interface ServiceSlide {
-  title: string;
-  description: string;
-  buttonText: string;
-  buttonHref: string;
-}
+import type { NavItem, ServiceSlide } from "@/types";
 
 export interface StatItem {
   value: number;

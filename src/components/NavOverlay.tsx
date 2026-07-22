@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import type { NavItem } from "@/lib/content-schema";
+import type { NavItem } from "@/types";
 
 interface NavOverlayProps {
   open: boolean;

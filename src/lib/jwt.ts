@@ -1,11 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is not set. Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
-}
-
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
 export type SessionPayload = {
   sub: string;
   role: "admin" | "ceo" | "colaborador";
@@ -15,7 +9,17 @@ export type SessionPayload = {
   empresaNome?: string;
 };
 
+function getSecret(): Uint8Array {
+  if (!process.env.JWT_SECRET) {
+    throw new Error(
+      "JWT_SECRET environment variable is not set. Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+    );
+  }
+  return new TextEncoder().encode(process.env.JWT_SECRET);
+}
+
 export async function signSession(payload: SessionPayload): Promise<string> {
+  const secret = getSecret();
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -25,6 +29,7 @@ export async function signSession(payload: SessionPayload): Promise<string> {
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
+    const secret = getSecret();
     const { payload } = await jwtVerify(token, secret);
     return payload as unknown as SessionPayload;
   } catch {

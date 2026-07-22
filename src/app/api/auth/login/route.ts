@@ -1,7 +1,32 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 import { getDb } from "@/lib/db-server";
 import { signSession, SESSION_COOKIE } from "@/lib/jwt";
+
+const loginSchema = z.object({
+  role: z.enum(["admin", "ceo", "colaborador"]),
+  email: z.string().email().optional(),
+  password: z.string().min(1).optional(),
+  codigo: z.string().min(1).optional(),
+  nif: z.string().min(1).optional(),
+});
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW = 60_000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
 
 interface AdminRow {
   id: string;
@@ -28,7 +53,18 @@ interface ColaboradorRow {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Demasiadas tentativas. Tente novamente mais tarde." }, { status: 429 });
+  }
+
+  let body: z.infer<typeof loginSchema>;
+  try {
+    body = loginSchema.parse(await request.json());
+  } catch {
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  }
+
   const { role } = body;
   const db = await getDb();
 
@@ -44,7 +80,8 @@ export async function POST(request: Request) {
     }
     const token = await signSession({ sub: admin.id, role: "admin", nome: admin.nome, email: admin.email });
     const res = NextResponse.json({ role: "admin", nome: admin.nome, email: admin.email });
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    const secure = process.env.NODE_ENV === 'production';
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 
@@ -67,7 +104,8 @@ export async function POST(request: Request) {
       empresaNome: empresa.nome,
     });
     const res = NextResponse.json({ role: "ceo", nome: empresa.ceo_nome, email: empresa.ceo_email, empresaId: empresa.id, empresaNome: empresa.nome });
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    const secure = process.env.NODE_ENV === 'production';
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 
@@ -92,7 +130,8 @@ export async function POST(request: Request) {
       empresaNome: empresa?.nome,
     });
     const res = NextResponse.json({ role: "colaborador", nome: colab.nome, email: colab.email, empresaId: colab.empresa_id, empresaNome: empresa?.nome });
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    const secure = process.env.NODE_ENV === 'production';
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 

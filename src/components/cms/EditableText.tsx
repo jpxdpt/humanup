@@ -3,6 +3,7 @@
 import { useRef, useState, type ElementType, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useSiteContentContext } from "@/lib/site-content";
+import { toast } from "sonner";
 
 interface EditableTextProps {
   contentKey: string;
@@ -38,7 +39,7 @@ export function EditableText({
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
-      alert("Erro ao guardar");
+      toast.error("Erro ao guardar");
     } finally {
       setSaving(false);
     }

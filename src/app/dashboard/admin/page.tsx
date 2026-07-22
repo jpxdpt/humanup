@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardLayout, KpiCard, Panel, Badge, EmptyState } from "@/components/dashboard";
-import { mockEmpresas, mockFaturas, mockEnvios } from "@/lib/db";
 
 export default function AdminDashboard() {
   return (
@@ -19,19 +18,40 @@ function AdminDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "dashboard";
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard");
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardData(data);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setDataLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated || user?.role !== "admin") router.push("/login");
-  }, [isAuthenticated, user, router, loading]);
+    else fetchData();
+  }, [isAuthenticated, user, router, loading, fetchData]);
 
   if (loading || !isAuthenticated || user?.role !== "admin") return null;
 
-  const totalEmpresas = mockEmpresas.length;
-  const totalColabs = mockEmpresas.reduce((acc, e) => acc + e.ncolab, 0);
-  const totalAtivos = mockEmpresas.filter((e) => e.estado === "ativo").length;
-  const totalFaturasPendentes = mockFaturas.filter((f) => f.estado === "pendente" || f.estado === "em_atraso").length;
-  const totalPorReceber = mockFaturas.filter((f) => f.estado === "pendente" || f.estado === "em_atraso").reduce((acc, f) => acc + f.valor, 0);
+  const empresas = dashboardData?.empresas || [];
+  const faturas = dashboardData?.faturas || [];
+  const envios = dashboardData?.envios || [];
+  const agg = dashboardData?.aggregados || {};
+  const totalEmpresas = agg.totalEmpresas || 0;
+  const totalColabs = agg.totalColaboradores || 0;
+  const totalAtivos = agg.totalAtivas || 0;
+  const totalFaturasPendentes = agg.totalFaturasPendentes || 0;
+  const totalPorReceber = agg.totalPorReceber || 0;
 
   return (
     <DashboardLayout>
@@ -55,7 +75,7 @@ function AdminDashboardContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-card-gap mb-margin-md">
             <KpiCard label="Empresas Clientes" value={String(totalEmpresas)} sub={String(totalAtivos) + " ativas"} icon="domain" />
             <KpiCard label="Colaboradores" value={String(totalColabs)} sub={`em ${totalEmpresas} empresas`} icon="badge" />
-            <KpiCard label="Questionários Ativos" value={String(mockEnvios.length)} sub={mockEnvios.length === 0 ? "Nenhum criado ainda" : "Em curso"} icon="assignment" highlight="primary" />
+            <KpiCard label="Questionários Ativos" value={String(envios.length)} sub={envios.length === 0 ? "Nenhum criado ainda" : "Em curso"} icon="assignment" highlight="primary" />
             <KpiCard label="Faturas Pendentes" value={String(totalFaturasPendentes)} sub={totalPorReceber > 0 ? `€ ${totalPorReceber}` : "Tudo regularizado"} icon="receipt_long" />
           </div>
 
@@ -77,10 +97,10 @@ function AdminDashboardContent() {
                   <h3 className="font-label-caps text-label-caps text-secondary uppercase tracking-wider">Acções Rápidas</h3>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <QuickAction icon="domain_add" label="Nova empresa" />
-                  <QuickAction icon="post_add" label="Novo questionário" />
-                  <QuickAction icon="send" label="Enviar questionário" />
-                  <QuickAction icon="receipt" label="Nova fatura" />
+                  <QuickAction icon="domain_add" label="Nova empresa" onClick={() => alert("Funcionalidade em desenvolvimento")} />
+                  <QuickAction icon="post_add" label="Novo questionário" onClick={() => alert("Funcionalidade em desenvolvimento")} />
+                  <QuickAction icon="send" label="Enviar questionário" onClick={() => alert("Funcionalidade em desenvolvimento")} />
+                  <QuickAction icon="receipt" label="Nova fatura" onClick={() => alert("Funcionalidade em desenvolvimento")} />
                 </div>
               </div>
             </div>
@@ -102,12 +122,12 @@ function AdminDashboardContent() {
           </div>
           <Panel title="Empresas">
             <div className="space-y-3">
-              {mockEmpresas.map((emp) => (
+              {empresas.map((emp: any) => (
                 <div key={emp.id} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant hover:border-primary hover:bg-surface-bright transition-all">
                   <div className="flex-1">
                     <div className="font-body-md text-body-md font-semibold text-on-surface">{emp.nome}</div>
                     <div className="font-body-sm text-body-sm text-secondary mt-0.5">{emp.nif} · {emp.ncolab} colaboradores · {emp.pacote}</div>
-                    <div className="font-body-sm text-body-sm text-tertiary">CEO: {emp.ceo.nome} · {emp.ceo.email}</div>
+                    <div className="font-body-sm text-body-sm text-tertiary">CEO: {emp.ceo_nome} · {emp.ceo_email}</div>
                   </div>
                   <Badge variant={emp.estado as "ativo" | "inativo"}>{emp.estado}</Badge>
                 </div>
@@ -130,11 +150,11 @@ function AdminDashboardContent() {
             </button>
           </div>
           <Panel title="Envios Recentes">
-            {mockEnvios.length === 0 ? (
+            {envios.length === 0 ? (
               <EmptyState icon="assignment" title="Nenhum envio realizado." description="Crie um questionário e envie para uma empresa." />
             ) : (
               <div className="space-y-3">
-                {mockEnvios.map((env) => (
+                {envios.map((env: any) => (
                   <div key={env.id} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant">
                     <div>
                       <div className="font-body-md text-body-md font-semibold text-on-surface">{env.quest_nome}</div>
@@ -171,9 +191,9 @@ function AdminDashboardContent() {
   );
 }
 
-function QuickAction({ icon, label }: { icon: string; label: string }) {
+function QuickAction({ icon, label, onClick }: { icon: string; label: string; onClick?: () => void }) {
   return (
-    <button className="w-full flex items-center gap-3 p-4 rounded-lg border border-surface-variant hover:border-primary hover:bg-surface-bright transition-all text-left group cursor-pointer">
+    <button onClick={onClick} className="w-full flex items-center gap-3 p-4 rounded-lg border border-surface-variant hover:border-primary hover:bg-surface-bright transition-all text-left group cursor-pointer">
       <div className="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
         <span className="material-symbols-outlined text-[18px]">{icon}</span>
       </div>

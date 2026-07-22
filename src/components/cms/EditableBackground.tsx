@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useSiteContentContext } from "@/lib/site-content";
+import { toast } from "sonner";
 
 interface EditableBackgroundProps {
   contentKey: string;
@@ -34,7 +35,7 @@ export function EditableBackground({
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok) throw new Error(data.error || "Erro ao enviar");
     } catch (err) {
-      alert("Erro: " + (err as Error).message);
+      toast.error("Erro: " + (err as Error).message);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

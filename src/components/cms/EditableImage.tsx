@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSiteContentContext } from "@/lib/site-content";
+import { toast } from "sonner";
 
 interface EditableImageProps {
   contentKey: string;
@@ -43,7 +44,7 @@ export function EditableImage({
       if (!res.ok) throw new Error(data.error || "Erro ao enviar");
       if (data.url) await saveContent(contentKey, data.url);
     } catch (err) {
-      alert("Erro: " + (err as Error).message);
+      toast.error("Erro: " + (err as Error).message);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";

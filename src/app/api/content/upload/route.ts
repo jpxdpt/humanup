@@ -3,9 +3,11 @@ import { cookies } from "next/headers";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { randomBytes } from "crypto";
+import { put } from "@vercel/blob";
 import { getDb } from "@/lib/db-server";
 import { verifySession, SESSION_COOKIE } from "@/lib/jwt";
 import { humanizeKey } from "@/lib/content-utils";
+import { fileTypeFromBuffer } from "file-type";
 
 const KEY_REGEX = /^[a-z0-9._-]+$/;
 const MAX_SIZE = 8 * 1024 * 1024;
@@ -34,14 +36,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ficheiro demasiado grande" }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-  const filename = `${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
-  const uploadDir = join(process.cwd(), "public", "images", "content");
-  await mkdir(uploadDir, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(join(uploadDir, filename), buffer);
 
-  const url = `/images/content/${filename}`;
+  const fileType = await fileTypeFromBuffer(buffer);
+  if (!fileType || !fileType.mime.startsWith("image/")) {
+    return NextResponse.json({ error: "Tipo de ficheiro inválido" }, { status: 400 });
+  }
+
+  const ext = fileType.ext;
+  const filename = `${Date.now()}-${randomBytes(6).toString("hex")}.${ext}`;
+
+  let url: string;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(filename, buffer, { access: "public" });
+    url = blob.url;
+  } else {
+    console.warn(
+      "BLOB_READ_WRITE_TOKEN not set — falling back to local filesystem"
+    );
+    const uploadDir = join(process.cwd(), "public", "images", "content");
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(join(uploadDir, filename), buffer);
+    url = `/images/content/${filename}`;
+  }
   const db = await getDb();
   await db.query(
     `INSERT INTO site_content (key, value, label, section)

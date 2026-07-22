@@ -1,10 +1,9 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardLayout, KpiCard, Panel, Badge, EmptyState } from "@/components/dashboard";
-import { mockColaboradores, mockFaturas } from "@/lib/db";
 
 export default function CeoDashboard() {
   return (
@@ -19,19 +18,36 @@ function CeoDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "dashboard";
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard");
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardData(data);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setDataLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated || user?.role !== "ceo") router.push("/login");
-  }, [isAuthenticated, user, router, loading]);
+    else fetchData();
+  }, [isAuthenticated, user, router, loading, fetchData]);
 
   if (loading || !isAuthenticated || user?.role !== "ceo") return null;
 
   const empresaNome = user?.empresaNome || "";
-  const colaboradores = mockColaboradores.filter((c) => c.empresa_nome === empresaNome);
-  const faturas = mockFaturas.filter((f) => f.empresa_nome === empresaNome);
-  const totalFaturado = faturas.filter((f) => f.estado === "pago").reduce((acc, f) => acc + f.valor, 0);
-  const porPagar = faturas.filter((f) => f.estado === "pendente" || f.estado === "em_atraso").reduce((acc, f) => acc + f.valor, 0);
+  const colaboradores = dashboardData?.colaboradores || [];
+  const faturas = dashboardData?.faturas || [];
+  const totalFaturado = faturas.filter((f: any) => f.estado === "pago").reduce((acc: number, f: any) => acc + Number(f.valor), 0);
+  const porPagar = faturas.filter((f: any) => f.estado === "pendente" || f.estado === "em_atraso").reduce((acc: number, f: any) => acc + Number(f.valor), 0);
 
   return (
     <DashboardLayout>
@@ -95,9 +111,9 @@ function CeoDashboardContent() {
             <div className="xl:col-span-4">
               <Panel title="Acções Rápidas">
                 <div className="flex flex-col gap-3">
-                  <QuickAction icon="assignment" label="Ver resultados" />
-                  <QuickAction icon="description" label="Descarregar relatório" />
-                  <QuickAction icon="forum" label="Contactar HumanUp" />
+                  <QuickAction icon="assignment" label="Ver resultados" onClick={() => alert("Funcionalidade em desenvolvimento")} />
+                  <QuickAction icon="description" label="Descarregar relatório" onClick={() => alert("Funcionalidade em desenvolvimento")} />
+                  <QuickAction icon="forum" label="Contactar HumanUp" onClick={() => alert("Funcionalidade em desenvolvimento")} />
                 </div>
               </Panel>
             </div>
@@ -116,13 +132,13 @@ function CeoDashboardContent() {
               <EmptyState icon="groups" title="Nenhum colaborador encontrado." />
             ) : (
               <div className="space-y-3">
-                {colaboradores.map((col) => (
+                {colaboradores.map((col: any) => (
                   <div key={col.id} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant">
                     <div>
                       <div className="font-body-md text-body-md font-semibold text-on-surface">{col.nome}</div>
-                      <div className="font-body-sm text-body-sm text-secondary mt-0.5">{col.cargo} · {col.departamento} · {col.localizacao}</div>
+                      <div className="font-body-sm text-body-sm text-secondary mt-0.5">{col.cargo} · {col.departamento}</div>
                     </div>
-                    <Badge variant={col.estado as "ativo" | "inativo"}>{col.estado}</Badge>
+                    <Badge variant={(col.estado || "ativo") as "ativo" | "inativo"}>{col.estado || "ativo"}</Badge>
                   </div>
                 ))}
               </div>
@@ -144,15 +160,15 @@ function CeoDashboardContent() {
               <EmptyState icon="receipt_long" title="Nenhuma fatura disponível." />
             ) : (
               <div className="space-y-3">
-                {faturas.map((fat) => (
+                {faturas.map((fat: any) => (
                   <div key={fat.id} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant">
                     <div>
                       <div className="font-body-md text-body-md font-semibold text-on-surface">{fat.referencia}</div>
                       <div className="font-body-sm text-body-sm text-secondary mt-0.5">{fat.descricao}</div>
-                      <div className="font-body-sm text-body-sm text-tertiary">Vencimento: {fat.vencimento}</div>
+                      <div className="font-body-sm text-body-sm text-tertiary">Vencimento: {fat.vencimento ? fat.vencimento.toString().split("T")[0] : ""}</div>
                     </div>
                     <div className="text-right flex items-center gap-3">
-                      <div className="font-headline-md text-headline-md font-semibold text-primary">€ {fat.valor}</div>
+                      <div className="font-headline-md text-headline-md font-semibold text-primary">€ {Number(fat.valor).toFixed(2)}</div>
                       <Badge variant={fat.estado as "pago" | "pendente" | "em_atraso"}>{fat.estado}</Badge>
                     </div>
                   </div>
@@ -176,7 +192,7 @@ function CeoDashboardContent() {
                 { titulo: "Template de Feedback", tipo: "XLSX", cor: "bg-[#dcfce7] text-[#166534]" },
                 { titulo: "Apresentação Resultados", tipo: "PPTX", cor: "bg-[#dbeafe] text-[#1e40af]" },
               ].map((r, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant hover:border-primary transition-colors cursor-pointer">
+                <div key={i} onClick={() => alert("Funcionalidade em desenvolvimento")} className="flex items-center justify-between p-4 rounded-xl border border-surface-variant hover:border-primary transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${r.cor}`}>{r.tipo}</span>
                     <span className="font-body-md text-body-md text-on-surface">{r.titulo}</span>
@@ -192,9 +208,9 @@ function CeoDashboardContent() {
   );
 }
 
-function QuickAction({ icon, label }: { icon: string; label: string }) {
+function QuickAction({ icon, label, onClick }: { icon: string; label: string; onClick?: () => void }) {
   return (
-    <button className="w-full flex items-center gap-3 p-4 rounded-lg border border-surface-variant hover:border-primary hover:bg-surface-bright transition-all text-left group cursor-pointer">
+    <button onClick={onClick} className="w-full flex items-center gap-3 p-4 rounded-lg border border-surface-variant hover:border-primary hover:bg-surface-bright transition-all text-left group cursor-pointer">
       <div className="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
         <span className="material-symbols-outlined text-[18px]">{icon}</span>
       </div>

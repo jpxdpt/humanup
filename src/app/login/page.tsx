@@ -118,6 +118,10 @@ export default function LoginPage() {
                 {loading ? "⏳ Entrar..." : "Entrar →"}
               </button>
 
+              <Link href="/recuperar-password" className="block text-center mt-3 font-body-sm text-body-sm text-secondary hover:text-primary transition-colors">
+                Esqueceu-se da password?
+              </Link>
+
               <button type="button" onClick={() => setStep("select")}
                 className="block mx-auto mt-4 font-body-sm text-body-sm text-secondary hover:text-primary transition-colors cursor-pointer">
                 ← Escolher outro tipo de acesso

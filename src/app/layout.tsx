@@ -19,7 +19,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "HumanUp — Painel Administrador",
+  title: "HumanUp",
   description: "Potencie a produtividade e o bem-estar dos seus colaboradores com soluções de diagnóstico e projetos de bem‑estar laboral personalizados.",
   icons: {
     icon: "/seo/favicon.png",

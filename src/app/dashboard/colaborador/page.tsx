@@ -9,6 +9,7 @@ export default function ColaboradorDashboard() {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [respostas, setRespostas] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<"" | "submitting" | "success" | "error">("");
 
   useEffect(() => {
     if (loading) return;
@@ -33,8 +34,19 @@ export default function ColaboradorDashboard() {
   }
 
   async function submeter() {
-    alert("✓ Questionário submetido com sucesso! As suas respostas são anónimas.");
-    router.push("/");
+    setStatus("submitting");
+    try {
+      const res = await fetch("/api/respostas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ respostas }),
+      });
+      if (!res.ok) throw new Error("Erro ao submeter");
+      setStatus("success");
+      setTimeout(() => router.push("/"), 2000);
+    } catch {
+      setStatus("error");
+    }
   }
 
   return (
@@ -113,12 +125,23 @@ export default function ColaboradorDashboard() {
           ))}
         </div>
 
+        {status === "success" && (
+          <div className="mt-4 p-4 bg-[#dcfce7] text-[#166534] rounded-lg font-body-md text-body-md text-center">
+            ✓ Questionário submetido com sucesso! As suas respostas são anónimas. A redirecionar...
+          </div>
+        )}
+        {status === "error" && (
+          <div className="mt-4 p-4 bg-[#fee2e2] text-[#991b1b] rounded-lg font-body-md text-body-md text-center">
+            Erro ao submeter o questionário. Tente novamente.
+          </div>
+        )}
+
         <button
           onClick={submeter}
-          disabled={progresso < totalPerguntas}
+          disabled={progresso < totalPerguntas || status === "submitting"}
           className="mt-8 w-full bg-primary text-on-primary font-button text-button rounded-lg px-6 py-3.5 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
-          {progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "✓ Submeter Questionário"}
+          {status === "submitting" ? "A submeter..." : progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "✓ Submeter Questionário"}
         </button>
       </div>
     </DashboardLayout>

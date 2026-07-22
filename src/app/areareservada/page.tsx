@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type Row = { key: string; value: string; label: string; section: string };
 
@@ -47,14 +48,14 @@ export default function AreaReservadaPage() {
       body: JSON.stringify({ value: values[row.key] ?? "" }),
     });
     setSaving(null);
-    if (!res.ok) alert("Erro ao guardar");
+    if (!res.ok) toast.error("Erro ao guardar");
   };
 
   const handleReset = async () => {
     if (!confirm("Repor todos os conteúdos para os valores predefinidos? Esta ação não pode ser desfeita.")) return;
     const res = await fetch("/api/content/reset", { method: "POST" });
     if (res.ok) window.location.reload();
-    else alert("Erro ao repor predefinições");
+    else toast.error("Erro ao repor predefinições");
   };
 
   const grouped = rows.reduce<Record<string, Row[]>>((acc, row) => {

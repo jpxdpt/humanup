@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -9,6 +10,38 @@ import { EditableText } from "@/components/cms/EditableText";
 
 export default function ContactosPage() {
   const contactos = useSiteContentSection("contactos");
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!name || !email || !message) return;
+    setStatus("loading");
+    setStatusMessage("");
+    try {
+      const res = await fetch("/api/contactos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Erro ao enviar mensagem");
+      setStatus("success");
+      setStatusMessage(data.message ?? "Mensagem enviada com sucesso");
+      setName("");
+      setEmail("");
+      setSubject("");
+      setMessage("");
+    } catch (err) {
+      setStatus("error");
+      setStatusMessage(err instanceof Error ? err.message : "Erro ao enviar mensagem");
+    }
+  }
 
   const emailLines = Array.from({ length: 2 }, (_, i) => contactos[`emailLines.${i}`] ?? FALLBACKS[`contactos.emailLines.${i}`]).filter(Boolean);
 
@@ -61,28 +94,34 @@ export default function ContactosPage() {
                 </div>
 
                 <div>
-                  <form className="space-y-6 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                  <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="name" className="block font-sans text-sm font-medium text-foreground mb-1">Nome *</label>
-                        <input type="text" id="name" className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="O seu nome" />
+                        <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="O seu nome" />
                       </div>
                       <div>
                         <label htmlFor="email" className="block font-sans text-sm font-medium text-foreground mb-1">Email *</label>
-                        <input type="email" id="email" className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="O seu email" />
+                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="O seu email" />
                       </div>
                     </div>
                     <div>
                       <label htmlFor="subject" className="block font-sans text-sm font-medium text-foreground mb-1">Assunto</label>
-                      <input type="text" id="subject" className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Assunto da mensagem" />
+                      <input type="text" id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Assunto da mensagem" />
                     </div>
                     <div>
                       <label htmlFor="message" className="block font-sans text-sm font-medium text-foreground mb-1">Mensagem *</label>
-                      <textarea id="message" rows={5} className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="A sua mensagem" />
+                      <textarea id="message" rows={5} value={message} onChange={(e) => setMessage(e.target.value)} className="w-full px-4 py-3 rounded-lg border border-gray-300 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors resize-none" placeholder="A sua mensagem" />
                     </div>
-                    <button type="submit" className="w-full bg-primary text-primary-foreground font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
-                      {contactos.formTitle ?? FALLBACKS["contactos.formTitle"]}
+                    <button type="submit" disabled={status === "loading"} className="w-full bg-primary text-primary-foreground font-heading font-bold text-base leading-[25.6px] capitalize px-8 py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+                      {status === "loading" ? "A enviar..." : contactos.formTitle ?? FALLBACKS["contactos.formTitle"]}
                     </button>
+                    {status === "success" && (
+                      <p className="text-green-600 font-sans text-sm text-center">{statusMessage}</p>
+                    )}
+                    {status === "error" && (
+                      <p className="text-red-600 font-sans text-sm text-center">{statusMessage}</p>
+                    )}
                   </form>
                 </div>
               </div>
