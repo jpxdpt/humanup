@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSiteContentContext } from "@/lib/site-content";
@@ -32,6 +32,7 @@ export function EditableImage({
   const src = content[contentKey] || fallback;
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -57,23 +58,20 @@ export function EditableImage({
 
   const isSvg = src.endsWith(".svg");
 
+  const onImageError = useCallback(() => setImgError(true), []);
+
   function renderImage(classNameOverride?: string, style?: React.CSSProperties) {
-    if (isSvg) {
-      return (
-        <img
-          src={src}
-          alt={alt}
-          className={cn("object-cover", classNameOverride || className)}
-          style={style}
-        />
-      );
+    const cls = cn("object-cover", classNameOverride || className);
+    if (isSvg || imgError) {
+      return <img src={src} alt={alt} className={cls} style={style} />;
     }
     return (
       <Image
         src={src}
         alt={alt}
-        className={cn("object-cover", classNameOverride || className)}
+        className={cls}
         style={style}
+        onError={onImageError}
         {...imageProps}
       />
     );
