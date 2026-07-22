@@ -103,85 +103,59 @@ async function migrate(pool: Pool) {
     );
   `);
 
-  try {
-    await pool.query("SELECT 1 FROM questionarios LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS questionarios (
-        id TEXT PRIMARY KEY, titulo TEXT NOT NULL, tipo TEXT DEFAULT 'outro', badge TEXT DEFAULT '',
-        estado TEXT DEFAULT 'ativo', perguntas JSONB NOT NULL DEFAULT '[]',
-        created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now()
-      )
-    `);
-  }
+  await pool.query("DROP TABLE IF EXISTS respostas_anonimas CASCADE");
+  await pool.query("DROP TABLE IF EXISTS envios CASCADE");
+  await pool.query("DROP TABLE IF EXISTS mensagens CASCADE");
+  await pool.query("DROP TABLE IF EXISTS questionarios CASCADE");
+  await pool.query("DROP TABLE IF EXISTS documentos CASCADE");
+  await pool.query("DROP TABLE IF EXISTS pacotes CASCADE");
+  await pool.query("DROP TABLE IF EXISTS dimensoes CASCADE");
 
-  try {
-    await pool.query("SELECT 1 FROM envios LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS envios (
-        id TEXT PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
-        quest_id TEXT NOT NULL REFERENCES questionarios(id) ON DELETE CASCADE,
-        codigo TEXT NOT NULL UNIQUE, estado TEXT DEFAULT 'aberto', total_colabs INTEGER DEFAULT 0,
-        respostas INTEGER DEFAULT 0, data_envio TIMESTAMPTZ DEFAULT now(), data_limite TIMESTAMPTZ
-      )
-    `);
-  }
-
-  try {
-    await pool.query("SELECT 1 FROM mensagens LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS mensagens (
-        id SERIAL PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
-        de TEXT NOT NULL DEFAULT 'admin', texto TEXT NOT NULL DEFAULT '', anexos JSONB DEFAULT '[]',
-        lida BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now()
-      )
-    `);
-  }
-
-  try {
-    await pool.query("SELECT 1 FROM documentos LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS documentos (
-        id SERIAL PRIMARY KEY, tipo TEXT NOT NULL DEFAULT 'PDF', nome TEXT NOT NULL,
-        descricao TEXT DEFAULT '', url TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ DEFAULT now()
-      )
-    `);
-  }
-
-  try {
-    await pool.query("SELECT 1 FROM pacotes LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS pacotes (
-        id TEXT PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT DEFAULT '', preco TEXT DEFAULT '€ 0'
-      )
-    `);
-  }
-
-  try {
-    await pool.query("SELECT 1 FROM dimensoes LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS dimensoes (
-        id SERIAL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, cor TEXT DEFAULT 'gold',
-        icone TEXT DEFAULT '\u{1F49B}', descricao TEXT DEFAULT ''
-      )
-    `);
-  }
-
-  try {
-    await pool.query("SELECT 1 FROM respostas_anonimas LIMIT 0");
-  } catch {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS respostas_anonimas (
-        id SERIAL PRIMARY KEY, envio_id TEXT REFERENCES envios(id) ON DELETE CASCADE,
-        texto TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now()
-      )
-    `);
-  }
+  await pool.query(`
+    CREATE TABLE questionarios (
+      id TEXT PRIMARY KEY, titulo TEXT NOT NULL, tipo TEXT DEFAULT 'outro', badge TEXT DEFAULT '',
+      estado TEXT DEFAULT 'ativo', perguntas JSONB NOT NULL DEFAULT '[]',
+      created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now()
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE envios (
+      id TEXT PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+      quest_id TEXT NOT NULL REFERENCES questionarios(id) ON DELETE CASCADE,
+      codigo TEXT NOT NULL UNIQUE, estado TEXT DEFAULT 'aberto', total_colabs INTEGER DEFAULT 0,
+      respostas INTEGER DEFAULT 0, data_envio TIMESTAMPTZ DEFAULT now(), data_limite TIMESTAMPTZ
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE mensagens (
+      id SERIAL PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+      de TEXT NOT NULL DEFAULT 'admin', texto TEXT NOT NULL DEFAULT '', anexos JSONB DEFAULT '[]',
+      lida BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now()
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE documentos (
+      id SERIAL PRIMARY KEY, tipo TEXT NOT NULL DEFAULT 'PDF', nome TEXT NOT NULL,
+      descricao TEXT DEFAULT '', url TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ DEFAULT now()
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE pacotes (
+      id TEXT PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT DEFAULT '', preco TEXT DEFAULT '€ 0'
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE dimensoes (
+      id SERIAL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, cor TEXT DEFAULT 'gold',
+      icone TEXT DEFAULT '\u{1F49B}', descricao TEXT DEFAULT ''
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE respostas_anonimas (
+      id SERIAL PRIMARY KEY, envio_id TEXT REFERENCES envios(id) ON DELETE CASCADE,
+      texto TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now()
+    )
+  `);
 
   const oldTable = await pool.query(`
     SELECT 1 FROM information_schema.columns
