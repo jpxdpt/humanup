@@ -320,7 +320,7 @@ function ClientesTab() {
 
       <Panel title="Empresas">
         {empresas.length === 0 ? (
-          <EmptyState icon="domain" title="Nenhuma empresa registada." description="Clique em \"Novo Cliente\" para adicionar a primeira." />
+          <EmptyState icon="domain" title="Nenhuma empresa registada." description={'Clique em "Novo Cliente" para adicionar a primeira.'} />
         ) : (
           <div className="space-y-3">
             {empresas.map((emp: any) => (
