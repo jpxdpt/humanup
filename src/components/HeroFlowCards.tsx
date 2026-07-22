@@ -52,9 +52,6 @@ export function HeroFlowCards() {
         overlay="rgba(20,20,20,0.55)"
       >
         <FlowSection aria-label={hero.title} className="bg-on-surface text-white">
-          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover pointer-events-none">
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
           <div className="absolute inset-0 bg-gradient-to-b from-black/15 to-black/25 pointer-events-none" />
           <div className="relative z-10 flex flex-col gap-6 min-h-full">
             <p className="text-xs font-bold uppercase tracking-[0.2em]">01 — A HumanUp</p>
