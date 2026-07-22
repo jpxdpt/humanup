@@ -84,24 +84,6 @@ function AdminDashboardContent() {
 
   return (
     <DashboardLayout>
-      {/* Sub-navigation */}
-      <div className="flex flex-wrap gap-1 mb-margin-md pb-2 border-b border-outline-variant overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => router.push(`/dashboard/admin?tab=${t.id}`)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
-              tab === t.id
-                ? "bg-primary text-on-primary"
-                : "text-secondary hover:bg-surface-container hover:text-on-surface"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
       {tab === "dashboard" && (
         <>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-margin-md">

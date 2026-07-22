@@ -114,9 +114,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <NavItem href="/dashboard/admin" icon="dashboard" label="Painel" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin")} />
               <NavItem href="/dashboard/admin?tab=clientes" icon="groups" label="Clientes" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=clientes")} />
               <NavItem href="/dashboard/admin?tab=questionarios" icon="description" label="Questionários" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=questionarios")} />
+              <NavItem href="/dashboard/admin?tab=envios" icon="send" label="Envios" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=envios")} />
+              <NavItem href="/dashboard/admin?tab=colaboradores" icon="person_add" label="Importar" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=colaboradores")} />
+              <NavItem href="/dashboard/admin?tab=mensagens" icon="forum" label="Mensagens" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=mensagens")} />
               <NavItem href="/dashboard/admin?tab=relatorios" icon="analytics" label="Relatórios" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=relatorios")} />
+              <NavItem href="/dashboard/admin?tab=documentos" icon="folder" label="Documentos" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=documentos")} />
+              <NavItem href="/dashboard/admin?tab=pacotes" icon="inventory_2" label="Pacotes" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=pacotes")} />
+              <NavItem href="/dashboard/admin?tab=dimensoes" icon="donut_large" label="Dimensões" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=dimensoes")} />
               <NavItem href="/dashboard/admin?tab=definicoes" icon="settings" label="Definições" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=definicoes")} />
-              <NavItem href="/areareservada" icon="edit_document" label="Área Reservada" onClick={() => setMobileMenuOpen(false)} active={isActive("/areareservada")} />
             </>
           )}
           {user?.role === "ceo" && (
