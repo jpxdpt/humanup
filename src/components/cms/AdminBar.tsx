@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 
 interface SessionUser {
@@ -11,6 +12,7 @@ interface SessionUser {
 }
 
 export function AdminBar() {
+  const pathname = usePathname();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -31,6 +33,7 @@ export function AdminBar() {
 
   if (!mounted) return null;
   if (!user || user.role !== "admin") return null;
+  if (pathname?.startsWith("/dashboard")) return null;
 
   const toggleEdit = () => {
     const next = !editMode;
