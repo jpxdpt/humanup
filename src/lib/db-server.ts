@@ -114,71 +114,47 @@ async function migrate(pool: Pool) {
       empresa_nome TEXT DEFAULT '', referencia TEXT DEFAULT '', valor DECIMAL(10,2) DEFAULT 0,
       data_emissao DATE DEFAULT CURRENT_DATE, vencimento DATE, estado TEXT DEFAULT 'pendente',
       descricao TEXT DEFAULT ''
-    )
-  `);
-  await pool.query(`
+    );
     CREATE TABLE IF NOT EXISTS questionarios (
       id TEXT PRIMARY KEY, titulo TEXT NOT NULL, tipo TEXT DEFAULT 'outro', badge TEXT DEFAULT '',
       estado TEXT DEFAULT 'ativo', perguntas JSONB NOT NULL DEFAULT '[]',
       created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
-  await pool.query(`
+    );
     CREATE TABLE IF NOT EXISTS envios (
       id TEXT PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
       quest_id TEXT NOT NULL REFERENCES questionarios(id) ON DELETE CASCADE,
       codigo TEXT NOT NULL, estado TEXT DEFAULT 'aberto', total_colabs INTEGER DEFAULT 0,
       respostas INTEGER DEFAULT 0, data_envio TIMESTAMPTZ DEFAULT now(), data_limite TIMESTAMPTZ
-    )
-  `);
-  await pool.query("ALTER TABLE envios DROP CONSTRAINT IF EXISTS envios_codigo_key");
-  await pool.query(`
+    );
+    CREATE TABLE IF NOT EXISTS mensagens (
+      id SERIAL PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
+      de TEXT NOT NULL DEFAULT 'admin', texto TEXT NOT NULL DEFAULT '', anexos JSONB DEFAULT '[]',
+      lida BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS documentos (
+      id SERIAL PRIMARY KEY, tipo TEXT NOT NULL DEFAULT 'PDF', nome TEXT NOT NULL,
+      descricao TEXT DEFAULT '', url TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS pacotes (
+      id TEXT PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT DEFAULT '', preco TEXT DEFAULT '€ 0'
+    );
+    CREATE TABLE IF NOT EXISTS dimensoes (
+      id SERIAL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, cor TEXT DEFAULT 'gold',
+      icone TEXT DEFAULT '\u{1F49B}', descricao TEXT DEFAULT ''
+    );
+    CREATE TABLE IF NOT EXISTS respostas_anonimas (
+      id SERIAL PRIMARY KEY, envio_id TEXT REFERENCES envios(id) ON DELETE CASCADE,
+      texto TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now()
+    );
     CREATE TABLE IF NOT EXISTS envio_destinatarios (
       id SERIAL PRIMARY KEY, envio_id TEXT NOT NULL REFERENCES envios(id) ON DELETE CASCADE,
       colaborador_id TEXT NOT NULL REFERENCES colaboradores(id) ON DELETE CASCADE,
       respondido BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now(),
       UNIQUE(envio_id, colaborador_id)
-    )
+    );
+    ALTER TABLE envios DROP CONSTRAINT IF EXISTS envios_codigo_key;
   `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS mensagens (
-      id SERIAL PRIMARY KEY, empresa_id TEXT NOT NULL REFERENCES empresas(id) ON DELETE CASCADE,
-      de TEXT NOT NULL DEFAULT 'admin', texto TEXT NOT NULL DEFAULT '', anexos JSONB DEFAULT '[]',
-      lida BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS documentos (
-      id SERIAL PRIMARY KEY, tipo TEXT NOT NULL DEFAULT 'PDF', nome TEXT NOT NULL,
-      descricao TEXT DEFAULT '', url TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS pacotes (
-      id TEXT PRIMARY KEY, nome TEXT NOT NULL, descricao TEXT DEFAULT '', preco TEXT DEFAULT '€ 0'
-    )
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS dimensoes (
-      id SERIAL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, cor TEXT DEFAULT 'gold',
-      icone TEXT DEFAULT '\u{1F49B}', descricao TEXT DEFAULT ''
-    )
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS respostas_anonimas (
-      id SERIAL PRIMARY KEY, envio_id TEXT REFERENCES envios(id) ON DELETE CASCADE,
-      texto TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
-  await pool.query(`CREATE TABLE IF NOT EXISTS envio_destinatarios (
-    id SERIAL PRIMARY KEY,
-    envio_id TEXT NOT NULL REFERENCES envios(id) ON DELETE CASCADE,
-    colaborador_id TEXT NOT NULL REFERENCES colaboradores(id) ON DELETE CASCADE,
-    respondido BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT now()
-  )`);
 
-  await pool.query("ALTER TABLE envios DROP CONSTRAINT IF EXISTS envios_codigo_key");
   await pool.query("ALTER TABLE colaboradores ADD COLUMN IF NOT EXISTS localizacao TEXT DEFAULT ''");
 
   const oldTable = await pool.query(`
@@ -231,9 +207,6 @@ async function migrate(pool: Pool) {
     );
     console.log("[seed] Admin password synced with env var");
   }
-
-  await pool.query("DELETE FROM colaboradores WHERE id IN ('col-1','col-2','col-3','col-4','col-5')");
-  await pool.query("DELETE FROM empresas WHERE id IN ('emp-1','emp-2','emp-3')");
 
   const contentCount = await pool.query("SELECT COUNT(*) FROM site_content");
   if (Number(contentCount.rows[0].count) === 0) {
