@@ -57,15 +57,53 @@ export async function POST(request: NextRequest) {
           LEFT JOIN questionarios q ON e.quest_id = q.id
           ORDER BY e.data_envio DESC
         `);
-        return NextResponse.json({ success: true, data: result.rows });
+        const envios = result.rows;
+        for (const env of envios) {
+          const dest = await db.query(
+            `SELECT ed.*, c.nome, c.email, c.departamento, c.localizacao, c.cargo
+             FROM envio_destinatarios ed
+             JOIN colaboradores c ON ed.colaborador_id = c.id
+             WHERE ed.envio_id = $1 ORDER BY c.nome`,
+            [env.id]
+          );
+          env.destinatarios = dest.rows;
+        }
+        return NextResponse.json({ success: true, data: envios });
       }
       case "envio_insert": {
-        const { empresa_id, quest_id, codigo, total_colabs, data_limite } = body;
+        const { empresa_id, quest_id, codigo, data_limite, colaborador_ids } = body;
+        const id = randomUUID();
+
+        let destIds: string[] = colaborador_ids || [];
+        if (!destIds.length) {
+          const colabs = await db.query("SELECT id FROM colaboradores WHERE empresa_id = $1 AND estado = 'ativo'", [empresa_id]);
+          destIds = colabs.rows.map((c: { id: string }) => c.id);
+        }
+
+        await db.query(
+          "INSERT INTO envios (id, empresa_id, quest_id, codigo, total_colabs, data_limite) VALUES ($1, $2, $3, $4, $5, $6)",
+          [id, empresa_id, quest_id, codigo, destIds.length, data_limite || null]
+        );
+
+        for (const cid of destIds) {
+          await db.query("INSERT INTO envio_destinatarios (envio_id, colaborador_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [id, cid]);
+        }
+
+        return NextResponse.json({ success: true, id });
+      }
+      case "envio_reenviar": {
+        const original = await db.query("SELECT * FROM envios WHERE id = $1", [body.id]);
+        const env = original.rows[0];
+        if (!env) return NextResponse.json({ success: false, error: "Envio nao encontrado" });
         const id = randomUUID();
         await db.query(
           "INSERT INTO envios (id, empresa_id, quest_id, codigo, total_colabs, data_limite) VALUES ($1, $2, $3, $4, $5, $6)",
-          [id, empresa_id, quest_id, codigo, total_colabs || 0, data_limite || null]
+          [id, env.empresa_id, env.quest_id, env.codigo, env.total_colabs, env.data_limite]
         );
+        const dest = await db.query("SELECT colaborador_id FROM envio_destinatarios WHERE envio_id = $1", [env.id]);
+        for (const d of dest.rows) {
+          await db.query("INSERT INTO envio_destinatarios (envio_id, colaborador_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [id, d.colaborador_id]);
+        }
         return NextResponse.json({ success: true, id });
       }
       case "envio_delete": {
@@ -174,6 +212,20 @@ export async function POST(request: NextRequest) {
       }
 
       // --- Colaborador Import ---
+      case "colaborador_list": {
+        const { empresa_id, localizacao, departamento, estado } = body;
+        const filters: string[] = ["empresa_id = $1"];
+        const params: unknown[] = [empresa_id];
+        let idx = 2;
+        if (localizacao) { filters.push(`localizacao = $${idx++}`); params.push(localizacao); }
+        if (departamento) { filters.push(`departamento = $${idx++}`); params.push(departamento); }
+        if (estado) { filters.push(`estado = $${idx++}`); params.push(estado); }
+        const result = await db.query(
+          `SELECT * FROM colaboradores WHERE ${filters.join(" AND ")} ORDER BY nome`,
+          params
+        );
+        return NextResponse.json({ success: true, data: result.rows });
+      }
       case "colaborador_import": {
         const { empresa_id, colaboradores } = body;
         const results: { nome: string; nif: string; success: boolean; codigo?: string; error?: string }[] = [];
@@ -183,8 +235,8 @@ export async function POST(request: NextRequest) {
             const code = randomUUID().replace(/-/g, "").substring(0, 12).toUpperCase();
             const hash = bcrypt.hashSync(code, 10);
             await db.query(
-              "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code_hash, departamento, cargo, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-              [id, empresa_id, col.nome, col.email || "", col.nif, hash, col.departamento || "", col.cargo || "", "ativo"]
+              "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code_hash, localizacao, departamento, cargo, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+              [id, empresa_id, col.nome, col.email || "", col.nif, hash, col.localizacao || "", col.departamento || "", col.cargo || "", "ativo"]
             );
             await db.query("UPDATE empresas SET ncolab = ncolab + 1 WHERE id = $1", [empresa_id]);
             results.push({ nome: col.nome, nif: col.nif, success: true, codigo: code });
@@ -230,6 +282,19 @@ export async function POST(request: NextRequest) {
       case "empresa_delete": {
         await db.query("DELETE FROM empresas WHERE id = $1", [body.id]);
         return NextResponse.json({ success: true });
+      }
+
+      // --- Colaborador List (with filters) ---
+      case "colaborador_list": {
+        const { empresa_id, localizacao, departamento } = body;
+        let sql = "SELECT * FROM colaboradores WHERE empresa_id = $1";
+        const params: unknown[] = [empresa_id];
+        let idx = 2;
+        if (localizacao) { sql += ` AND localizacao = $${idx++}`; params.push(localizacao); }
+        if (departamento) { sql += ` AND departamento = $${idx++}`; params.push(departamento); }
+        sql += " ORDER BY nome";
+        const result = await db.query(sql, params);
+        return NextResponse.json({ success: true, data: result.rows });
       }
 
       // --- Dashboard Admin Stats ---

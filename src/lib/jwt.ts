@@ -2,11 +2,12 @@ import { SignJWT, jwtVerify } from "jose";
 
 export type SessionPayload = {
   sub: string;
-  role: "admin" | "ceo" | "colaborador";
+  role: "admin" | "ceo" | "gestor" | "colaborador";
   nome: string;
   email?: string;
   empresaId?: string;
   empresaNome?: string;
+  envioId?: string;
 };
 
 function getSecret(): Uint8Array {

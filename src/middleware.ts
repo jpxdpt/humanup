@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession, SESSION_COOKIE } from "@/lib/jwt";
 
-const ROLE_PREFIXES: Record<string, string> = {
+const ROLE_PREFIXES: Record<string, string | string[]> = {
   "/areareservada": "admin",
   "/dashboard/admin": "admin",
-  "/dashboard/ceo": "ceo",
+  "/dashboard/ceo": ["ceo", "gestor"],
   "/dashboard/colaborador": "colaborador",
 };
 
@@ -22,7 +22,8 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     const session = token ? await verifySession(token) : null;
 
-    if (!session || session.role !== requiredRole) {
+    const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    if (!session || !allowed.includes(session.role)) {
       const loginUrl = new URL("/login", request.url);
       response = NextResponse.redirect(loginUrl);
     } else {

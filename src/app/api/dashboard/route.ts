@@ -21,34 +21,6 @@ export async function GET() {
 
   const db = await getDb();
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS envios (
-      id SERIAL PRIMARY KEY,
-      empresa_id TEXT NOT NULL,
-      quest_nome TEXT NOT NULL,
-      codigo TEXT NOT NULL,
-      estado TEXT DEFAULT 'ativo',
-      data_envio DATE DEFAULT CURRENT_DATE,
-      data_limite DATE,
-      total INTEGER DEFAULT 0,
-      respondidos INTEGER DEFAULT 0
-    )
-  `);
-
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS faturas (
-      id SERIAL PRIMARY KEY,
-      empresa_id TEXT NOT NULL,
-      empresa_nome TEXT DEFAULT '',
-      referencia TEXT DEFAULT '',
-      valor DECIMAL(10,2) DEFAULT 0,
-      data_emissao DATE DEFAULT CURRENT_DATE,
-      vencimento DATE,
-      estado TEXT DEFAULT 'pendente',
-      descricao TEXT DEFAULT ''
-    )
-  `);
-
   if (session.role === "admin") {
     const empresas = await db.query("SELECT * FROM empresas ORDER BY nome");
     const colaboradores = await db.query("SELECT * FROM colaboradores ORDER BY nome");

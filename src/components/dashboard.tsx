@@ -40,7 +40,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "dashboard";
-  const roleLabel = user?.role === "admin" ? "Enterprise Admin" : user?.role === "ceo" ? "CEO" : "Colaborador";
+  const roleLabel = user?.role === "admin" ? "Enterprise Admin" : user?.role === "ceo" ? "CEO" : user?.role === "gestor" ? "Gestor" : "Colaborador";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -124,7 +124,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <NavItem href="/dashboard/admin?tab=definicoes" icon="settings" label="Definições" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=definicoes")} />
             </>
           )}
-          {user?.role === "ceo" && (
+          {(user?.role === "ceo" || user?.role === "gestor") && (
             <>
               <NavItem href="/dashboard/ceo" icon="dashboard" label="Painel" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo")} />
               <NavItem href="/dashboard/ceo?tab=equipa" icon="groups" label="Equipa" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo?tab=equipa")} />

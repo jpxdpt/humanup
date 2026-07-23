@@ -40,6 +40,19 @@ interface Envio {
   data_limite: string;
   empresa_nome: string;
   quest_nome: string;
+  destinatarios?: Colaborador[];
+}
+
+interface Colaborador {
+  id: string;
+  nome: string;
+  email: string;
+  nif: string;
+  localizacao: string;
+  departamento: string;
+  cargo: string;
+  estado: string;
+  respondido?: boolean;
 }
 
 interface Mensagem {
@@ -76,6 +89,7 @@ interface Dimensao {
   descricao: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ActionFn = (action: string, body?: Record<string, unknown>) => Promise<any>;
 
 function useAdminApi() {
@@ -136,28 +150,12 @@ function LabelCaps({ children }: { children: React.ReactNode }) {
   return <span className="font-label-caps text-label-caps text-secondary uppercase tracking-wider">{children}</span>;
 }
 
-function Modal({ open, onClose, children, title }: { open: boolean; onClose: () => void; children: React.ReactNode; title: string }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-in fade-in duration-200" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant">
-          <h3 className="font-headline-md text-headline-md text-on-surface">{title}</h3>
-          <button onClick={onClose} className="p-1 text-secondary hover:bg-surface-container rounded-lg cursor-pointer">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 // ─── QUESTIONARIO BUILDER ───
 
 export function QuestionarioBuilder() {
   const api = useAdminApi();
   const [questionarios, setQuestionarios] = useState<Questionario[]>([]);
+  const [dimensoes, setDimensoes] = useState<Dimensao[]>([]);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState<Questionario | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -168,8 +166,9 @@ export function QuestionarioBuilder() {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
   const carregar = useCallback(async () => {
-    const res = await api("questionario_list");
-    if (res.success) setQuestionarios(res.data);
+    const [qRes, dRes] = await Promise.all([api("questionario_list"), api("dimensao_list")]);
+    if (qRes.success) setQuestionarios(qRes.data);
+    if (dRes.success) setDimensoes(dRes.data);
     setLoading(false);
   }, [api]);
 
@@ -226,6 +225,8 @@ export function QuestionarioBuilder() {
     const pFiltradas = perguntas.filter((p) => p.texto.trim());
     if (!titulo.trim()) { toast.error("Introduza o titulo do questionario."); return; }
     if (!pFiltradas.length) { toast.error("Adicione pelo menos 1 pergunta."); return; }
+    const semDim = pFiltradas.filter((p) => !p.dim.trim());
+    if (semDim.length) { toast.error(`A dimensao e obrigatoria. Pergunta(s) sem dimensao: ${semDim.map((_, i) => i + 1).join(", ")}`); return; }
     if (editando) {
       const res = await api("questionario_update", { id: editando.id, titulo: titulo.trim(), tipo, perguntas: pFiltradas });
       if (res.success) toast.success("Questionario atualizado.");
@@ -362,8 +363,12 @@ export function QuestionarioBuilder() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body-sm text-body-sm text-secondary block mb-1">Dimensao (opcional)</label>
-                  <input value={perguntas[editIdx].dim} onChange={(e) => { const nova = [...perguntas]; nova[editIdx] = { ...nova[editIdx], dim: e.target.value }; setPerguntas(nova); }} className="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="Ex: Bem-estar" />
+                  <label className="font-body-sm text-body-sm text-secondary block mb-1">Dimensao *</label>
+                  <select value={perguntas[editIdx].dim} onChange={(e) => { const nova = [...perguntas]; nova[editIdx] = { ...nova[editIdx], dim: e.target.value }; setPerguntas(nova); }} className="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container">
+                    <option value="">Selecionar dimensao</option>
+                    {dimensoes.map((d) => <option key={d.id} value={d.nome}>{d.nome}</option>)}
+                  </select>
+                  {dimensoes.length === 0 && <p className="text-[12px] text-error mt-1">Crie dimensoes em Definicoes &gt; Dimensoes primeiro.</p>}
                 </div>
                 <div>
                   <label className="font-body-sm text-body-sm text-secondary block mb-1">Obrigatoria</label>
@@ -424,7 +429,7 @@ export function QuestionarioBuilder() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={q.estado as any}>{q.estado}</Badge>
+                    <Badge variant={q.estado as "ativo" | "inativo" | "rascunho"}>{q.estado}</Badge>
                     <button onClick={() => editar(q)} className="p-1.5 text-secondary hover:bg-surface-container rounded-lg cursor-pointer"><span className="material-symbols-outlined text-[18px]">edit</span></button>
                     <button onClick={() => eliminar(q.id)} className="p-1.5 text-error hover:bg-error-container/30 rounded-lg cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                   </div>
@@ -445,12 +450,17 @@ export function EnvioQuestionarios() {
   const [envios, setEnvios] = useState<Envio[]>([]);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [questionarios, setQuestionarios] = useState<Questionario[]>([]);
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
   const [loading, setLoading] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [empresaId, setEmpresaId] = useState("");
   const [questId, setQuestId] = useState("");
+  const [localizacao, setLocalizacao] = useState("");
+  const [departamento, setDepartamento] = useState("");
+  const [colaboradorId, setColaboradorId] = useState("");
   const [dataLimite, setDataLimite] = useState("");
   const [codigoGerado, setCodigoGerado] = useState("");
+  const [envioExpandido, setEnvioExpandido] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     const [eRes, qRes, envRes] = await Promise.all([
@@ -466,30 +476,55 @@ export function EnvioQuestionarios() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  function gerarCodigo() {
-    const prefixo = "HUP";
-    const sufixo = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `${prefixo}-${sufixo}`;
-  }
+  useEffect(() => {
+    if (!empresaId) { setColaboradores([]); setLocalizacao(""); setDepartamento(""); setColaboradorId(""); return; }
+    api("colaborador_list", { empresa_id: empresaId }).then((res) => {
+      if (res.success) setColaboradores(res.data);
+    });
+  }, [empresaId, api]);
+
+  const localizacoes = Array.from(new Set(colaboradores.map((c) => c.localizacao).filter(Boolean)));
+  const departamentos = Array.from(new Set(colaboradores.map((c) => c.departamento).filter(Boolean)));
+
+  const colaboradoresFiltrados = colaboradores.filter((c) => {
+    return (!localizacao || c.localizacao === localizacao) && (!departamento || c.departamento === departamento);
+  });
 
   async function enviar() {
     if (!empresaId) { toast.error("Selecione uma empresa."); return; }
     if (!questId) { toast.error("Selecione um questionario."); return; }
-    const emp = empresas.find((e) => e.id === empresaId);
-    const codigo = gerarCodigo();
+    const destIds = colaboradorId ? [colaboradorId] : colaboradoresFiltrados.map((c) => c.id);
+    if (!destIds.length) { toast.error("Nenhum destinatario selecionado."); return; }
+    const prefixo = "HUP";
+    // eslint-disable-next-line react-hooks/purity
+    const sufixo = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const codigo = `${prefixo}-${sufixo}`;
     setCodigoGerado(codigo);
     const res = await api("envio_insert", {
       empresa_id: empresaId,
       quest_id: questId,
       codigo,
       data_limite: dataLimite || null,
+      colaborador_ids: destIds,
     });
     if (res.success) {
-      toast.success("Questionario enviado! Codigo: " + codigo);
+      toast.success(`Questionario enviado para ${destIds.length} colaborador(es)! Codigo: ${codigo}`);
       setMostrarForm(false);
       setEmpresaId("");
       setQuestId("");
+      setLocalizacao("");
+      setDepartamento("");
+      setColaboradorId("");
       setDataLimite("");
+      setCodigoGerado("");
+      carregar();
+    }
+  }
+
+  async function reenviar(env: Envio) {
+    const res = await api("envio_reenviar", { id: env.id });
+    if (res.success) {
+      toast.success(`Questionario reenviado com o codigo ${env.codigo}`);
       carregar();
     }
   }
@@ -511,17 +546,38 @@ export function EnvioQuestionarios() {
           <h3 className="font-headline-sm text-headline-sm text-on-surface">Novo envio de questionario</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="font-body-sm text-body-sm text-secondary block mb-1">Empresa</label>
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Questionario *</label>
+              <select value={questId} onChange={(e) => setQuestId(e.target.value)} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container">
+                <option value="">Selecionar questionario</option>
+                {questionarios.filter((q) => q.estado === "ativo").map((q) => <option key={q.id} value={q.id}>{q.titulo}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Empresa *</label>
               <select value={empresaId} onChange={(e) => setEmpresaId(e.target.value)} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container">
                 <option value="">Selecionar empresa</option>
                 {empresas.map((e) => <option key={e.id} value={e.id}>{e.nome}</option>)}
               </select>
             </div>
             <div>
-              <label className="font-body-sm text-body-sm text-secondary block mb-1">Questionario</label>
-              <select value={questId} onChange={(e) => setQuestId(e.target.value)} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container">
-                <option value="">Selecionar questionario</option>
-                {questionarios.filter((q) => q.estado === "ativo").map((q) => <option key={q.id} value={q.id}>{q.titulo}</option>)}
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Localizacao</label>
+              <select value={localizacao} onChange={(e) => { setLocalizacao(e.target.value); setColaboradorId(""); }} disabled={!empresaId} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container disabled:opacity-40">
+                <option value="">Todas as localizacoes</option>
+                {localizacoes.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Departamento</label>
+              <select value={departamento} onChange={(e) => { setDepartamento(e.target.value); setColaboradorId(""); }} disabled={!empresaId} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container disabled:opacity-40">
+                <option value="">Todos os departamentos</option>
+                {departamentos.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Enviar apenas para (opcional)</label>
+              <select value={colaboradorId} onChange={(e) => setColaboradorId(e.target.value)} disabled={!empresaId} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container disabled:opacity-40">
+                <option value="">Todos os colaboradores filtrados ({colaboradoresFiltrados.length})</option>
+                {colaboradoresFiltrados.map((c) => <option key={c.id} value={c.id}>{c.nome} · {c.email} · {c.departamento || "Sem departamento"} · {c.localizacao || "Sem localizacao"}</option>)}
               </select>
             </div>
             <div>
@@ -553,20 +609,46 @@ export function EnvioQuestionarios() {
         ) : (
           <div className="space-y-2">
             {envios.map((env) => (
-              <div key={env.id} className="flex items-center justify-between p-4 rounded-lg border border-outline-variant">
-                <div className="flex-1">
-                  <div className="font-body-md text-body-md font-semibold text-on-surface">{env.quest_nome || "---"}</div>
-                  <div className="font-body-sm text-body-sm text-secondary mt-0.5">{env.empresa_nome} &middot; Codigo: <strong>{env.codigo}</strong></div>
-                  <div className="font-body-sm text-body-sm text-tertiary">Enviado: {new Date(env.data_envio).toLocaleDateString("pt-PT")}{env.data_limite ? " · Limite: " + new Date(env.data_limite).toLocaleDateString("pt-PT") : ""}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-headline-md text-headline-md font-semibold text-primary">{env.respostas}/{env.total_colabs}</div>
-                  <div className="font-body-sm text-body-sm text-secondary">{env.total_colabs > 0 ? Math.round((env.respostas / env.total_colabs) * 100) : 0}% respondidas</div>
-                  <div className="w-24 h-1.5 bg-surface-container rounded-full mt-1 overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: `${env.total_colabs > 0 ? (env.respostas / env.total_colabs) * 100 : 0}%` }} />
+              <div key={env.id} className="rounded-lg border border-outline-variant overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex-1">
+                    <div className="font-body-md text-body-md font-semibold text-on-surface">{env.quest_nome || "---"}</div>
+                    <div className="font-body-sm text-body-sm text-secondary mt-0.5">{env.empresa_nome} &middot; Codigo: <strong>{env.codigo}</strong></div>
+                    <div className="font-body-sm text-body-sm text-tertiary">Enviado: {new Date(env.data_envio).toLocaleDateString("pt-PT")}{env.data_limite ? " · Limite: " + new Date(env.data_limite).toLocaleDateString("pt-PT") : ""}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-headline-md text-headline-md font-semibold text-primary">{env.respostas}/{env.total_colabs}</div>
+                    <div className="font-body-sm text-body-sm text-secondary">{env.total_colabs > 0 ? Math.round((env.respostas / env.total_colabs) * 100) : 0}% respondidas</div>
+                    <div className="w-24 h-1.5 bg-surface-container rounded-full mt-1 overflow-hidden ml-auto">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${env.total_colabs > 0 ? (env.respostas / env.total_colabs) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 ml-3">
+                    <button onClick={() => setEnvioExpandido(envioExpandido === env.id ? null : env.id)} className="p-1.5 text-secondary hover:bg-surface-container rounded-lg cursor-pointer" title="Ver destinatarios">
+                      <span className="material-symbols-outlined text-[18px]">{envioExpandido === env.id ? "expand_less" : "expand_more"}</span>
+                    </button>
+                    <button onClick={() => reenviar(env)} className="p-1.5 text-primary hover:bg-primary-container/30 rounded-lg cursor-pointer" title="Reenviar">
+                      <span className="material-symbols-outlined text-[18px]">replay</span>
+                    </button>
+                    <button onClick={async () => { await api("envio_delete", { id: env.id }); carregar(); }} className="p-1.5 text-error hover:bg-error-container/30 rounded-lg cursor-pointer" title="Eliminar">
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
                   </div>
                 </div>
-                <button onClick={async () => { await api("envio_delete", { id: env.id }); carregar(); }} className="ml-3 p-1.5 text-error hover:bg-error-container/30 rounded-lg cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                {envioExpandido === env.id && (
+                  <div className="border-t border-outline-variant px-4 py-3 bg-surface-container/30">
+                    <p className="font-label-caps text-label-caps text-secondary uppercase tracking-wider mb-2">Destinatarios ({env.destinatarios?.length || 0})</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                      {env.destinatarios?.map((d) => (
+                        <div key={d.id} className="flex items-center gap-2 text-body-sm">
+                          <span className={`w-2 h-2 rounded-full ${d.respondido ? "bg-[#22c55e]" : "bg-surface-container"}`} />
+                          <span className="text-on-surface">{d.nome}</span>
+                          <span className="text-secondary text-[12px]">{d.email}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -706,7 +788,7 @@ export function ImportarColaboradores() {
   const api = useAdminApi();
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [empresaId, setEmpresaId] = useState("");
-  const [colaboradores, setColaboradores] = useState<{ nome: string; email: string; nif: string; departamento: string; cargo: string }[]>([]);
+  const [colaboradores, setColaboradores] = useState<{ nome: string; email: string; nif: string; localizacao: string; departamento: string; cargo: string }[]>([]);
   const [resultados, setResultados] = useState<{ nome: string; nif: string; success: boolean; codigo?: string; error?: string }[] | null>(null);
 
   useEffect(() => {
@@ -725,7 +807,14 @@ export function ImportarColaboradores() {
       if (lines.length < 2) { toast.error("Ficheiro vazio ou formato invalido."); return; }
       const parsed = lines.slice(1).map((line) => {
         const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
-        return { nome: cols[0] || "", email: cols[1] || "", nif: cols[2] || "", departamento: cols[3] || "", cargo: cols[4] || "" };
+        return {
+          nome: cols[0] || "",
+          email: cols[1] || "",
+          nif: cols[2] || "",
+          localizacao: cols[3] || "",
+          departamento: cols[4] || "",
+          cargo: cols[5] || "",
+        };
       }).filter((c) => c.nome && c.nif);
       if (!parsed.length) { toast.error("Nenhum colaborador valido encontrado."); return; }
       setColaboradores(parsed);
@@ -749,6 +838,14 @@ export function ImportarColaboradores() {
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 space-y-4">
         <h3 className="font-headline-sm text-headline-sm text-on-surface">Importar colaboradores</h3>
         <p className="font-body-sm text-body-sm text-secondary">Formato CSV: Nome, Email, NIF, Departamento, Cargo (1 por linha, cabecalho na primeira linha).</p>
+        <a
+          href="data:text/csv;charset=utf-8,Nome,Email,NIF,Localizacao,Departamento,Cargo%0AAna Silva,ana.silva@empresa.pt,123456789,Porto,Recursos Humanos,Analista%0A"
+          download="template_colaboradores.csv"
+          className="inline-flex items-center gap-2 text-primary font-body-md text-body-md hover:underline cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[18px]">download</span>
+          Descarregar template CSV
+        </a>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -860,6 +957,8 @@ export function DocumentosAdmin() {
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("PDF");
   const [descricao, setDescricao] = useState("");
+  const [ficheiro, setFicheiro] = useState<File | null>(null);
+  const [aCarregar, setACarregar] = useState(false);
 
   const carregar = useCallback(async () => {
     const res = await api("documento_list");
@@ -870,12 +969,27 @@ export function DocumentosAdmin() {
 
   async function guardar() {
     if (!nome.trim()) { toast.error("Introduza o nome do documento."); return; }
-    await api("documento_insert", { tipo, nome: nome.trim(), descricao: descricao.trim() });
-    setMostrarForm(false);
-    setNome("");
-    setDescricao("");
-    toast.success("Documento adicionado.");
-    carregar();
+    setACarregar(true);
+    try {
+      let url = "";
+      if (ficheiro) {
+        const formData = new FormData();
+        formData.append("file", ficheiro);
+        const upRes = await fetch("/api/admin/upload", { method: "POST", body: formData });
+        const upData = await upRes.json();
+        if (!upRes.ok) { toast.error(upData.error || "Erro ao carregar ficheiro."); return; }
+        url = upData.url;
+      }
+      await api("documento_insert", { tipo, nome: nome.trim(), descricao: descricao.trim(), url });
+      setMostrarForm(false);
+      setNome("");
+      setDescricao("");
+      setFicheiro(null);
+      toast.success("Documento adicionado.");
+      carregar();
+    } finally {
+      setACarregar(false);
+    }
   }
 
   return (
@@ -909,10 +1023,19 @@ export function DocumentosAdmin() {
               <label className="font-body-sm text-body-sm text-secondary block mb-1">Descricao</label>
               <input value={descricao} onChange={(e) => setDescricao(e.target.value)} className="w-full border border-outline-variant rounded-lg px-3 py-2.5 font-body-md text-body-md bg-transparent focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="Descricao do documento" />
             </div>
+            <div className="md:col-span-2">
+              <label className="font-body-sm text-body-sm text-secondary block mb-1">Ficheiro *</label>
+              <label className="flex items-center gap-2 px-4 py-3 border border-dashed border-outline-variant rounded-lg cursor-pointer hover:border-primary transition-colors">
+                <span className="material-symbols-outlined text-secondary">upload_file</span>
+                <span className="font-body-md text-body-md text-secondary">{ficheiro ? ficheiro.name : "Selecionar ficheiro..."}</span>
+                <input type="file" accept=".pdf,.docx,.xlsx,.pptx,.csv" onChange={(e) => setFicheiro(e.target.files?.[0] || null)} className="hidden" />
+              </label>
+              <p className="text-[12px] text-secondary mt-1">PDF, DOCX, XLSX, PPTX ou CSV (max 32MB).</p>
+            </div>
           </div>
           <div className="flex gap-3">
-            <button onClick={guardar} className="bg-primary text-on-primary font-button text-button px-6 py-2.5 rounded-lg cursor-pointer hover:opacity-90 transition-opacity">Adicionar</button>
-            <button onClick={() => setMostrarForm(false)} className="border border-outline-variant text-on-surface font-button text-button px-6 py-2.5 rounded-lg cursor-pointer hover:bg-surface-container transition-colors">Cancelar</button>
+            <button onClick={guardar} disabled={aCarregar || !ficheiro} className="bg-primary text-on-primary font-button text-button px-6 py-2.5 rounded-lg cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">{aCarregar ? "A carregar..." : "Adicionar"}</button>
+            <button onClick={() => { setMostrarForm(false); setFicheiro(null); }} className="border border-outline-variant text-on-surface font-button text-button px-6 py-2.5 rounded-lg cursor-pointer hover:bg-surface-container transition-colors">Cancelar</button>
           </div>
         </div>
       )}
@@ -931,7 +1054,14 @@ export function DocumentosAdmin() {
                     {d.descricao && <p className="font-body-sm text-body-sm text-secondary">{d.descricao}</p>}
                   </div>
                 </div>
-                <button onClick={async () => { await api("documento_delete", { id: d.id }); carregar(); }} className="p-1.5 text-error hover:bg-error-container/30 rounded-lg cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                <div className="flex items-center gap-1">
+                  {d.url && (
+                    <a href={d.url} target="_blank" rel="noreferrer" className="p-1.5 text-primary hover:bg-primary-container/30 rounded-lg cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px]">download</span>
+                    </a>
+                  )}
+                  <button onClick={async () => { await api("documento_delete", { id: d.id }); carregar(); }} className="p-1.5 text-error hover:bg-error-container/30 rounded-lg cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                </div>
               </div>
             ))}
           </div>

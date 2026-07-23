@@ -35,13 +35,15 @@ function CeoDashboardContent() {
     }
   }, []);
 
+  const isCeoOrGestor = user?.role === "ceo" || user?.role === "gestor";
+
   useEffect(() => {
     if (loading) return;
-    if (!isAuthenticated || user?.role !== "ceo") router.push("/login");
+    if (!isAuthenticated || !isCeoOrGestor) router.push("/login");
     else fetchData();
-  }, [isAuthenticated, user, router, loading, fetchData]);
+  }, [isAuthenticated, user, router, loading, fetchData, isCeoOrGestor]);
 
-  if (loading || !isAuthenticated || user?.role !== "ceo") return null;
+  if (loading || !isAuthenticated || !isCeoOrGestor) return null;
 
   const empresaNome = user?.empresaNome || "";
   const colaboradores = dashboardData?.colaboradores || [];

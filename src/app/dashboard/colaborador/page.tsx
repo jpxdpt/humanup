@@ -10,15 +10,22 @@ export default function ColaboradorDashboard() {
   const router = useRouter();
   const [respostas, setRespostas] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"" | "submitting" | "success" | "error">("");
+  const [envio, setEnvio] = useState<any>(null);
 
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated || user?.role !== "colaborador") router.push("/login");
+    else if (user?.envioId) {
+      fetch(`/api/respostas?envio_id=${user.envioId}`)
+        .then((r) => r.json())
+        .then((data) => setEnvio(data.envio || null))
+        .catch(() => {});
+    }
   }, [isAuthenticated, user, router, loading]);
 
   if (loading || !isAuthenticated || user?.role !== "colaborador") return null;
 
-  const perguntas = [
+  const perguntas: { id: string; texto: string; tipo: string }[] = envio?.questionario?.perguntas?.filter((p: any) => p.texto.trim()) || [
     { id: "q1", texto: "Sinto-me motivado(a) no meu trabalho atual.", tipo: "escala" },
     { id: "q2", texto: "Recomendaria a minha empresa como um bom local para trabalhar.", tipo: "nps" },
     { id: "q3", texto: "A minha carga de trabalho é adequada.", tipo: "escala" },

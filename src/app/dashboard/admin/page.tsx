@@ -225,6 +225,7 @@ function AdminDashboardContent() {
 }
 
 function ClientesTab() {
+  const router = useRouter();
   const [empresas, setEmpresas] = useState<any[]>([]);
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState<any | null>(null);
@@ -280,6 +281,20 @@ function ClientesTab() {
     }
   };
 
+  const verComo = async (emp: any, role: "ceo" | "gestor") => {
+    const res = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ empresa_id: emp.id, role }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      router.push("/dashboard/ceo");
+    } else {
+      setToast("Erro: " + (data.error || "desconhecido"));
+    }
+  };
+
   const eliminar = async (id: string, nome: string) => {
     if (!confirm(`Tem a certeza que deseja eliminar "${nome}"?`)) return;
     const res = await fetch("/api/admin", {
@@ -332,6 +347,12 @@ function ClientesTab() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={emp.estado as "ativo" | "inativo"}>{emp.estado}</Badge>
+                  <button onClick={() => verComo(emp, "ceo")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100" title="Ver como CEO">
+                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  </button>
+                  <button onClick={() => verComo(emp, "gestor")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100" title="Ver como Gestor">
+                    <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
+                  </button>
                   <button onClick={() => abrirEditar(emp)} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100">
                     <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>

@@ -47,9 +47,10 @@ function Button({
   variant = "default",
   size = "default",
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: React.ComponentPropsWithoutRef<"button"> & VariantProps<typeof buttonVariants>) {
+  const ButtonComp = ButtonPrimitive as React.ComponentType<React.ComponentPropsWithoutRef<"button">>;
   return (
-    <ButtonPrimitive
+    <ButtonComp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}

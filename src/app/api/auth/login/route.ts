@@ -121,6 +121,14 @@ export async function POST(request: Request) {
     }
     const empresaResult = await db.query("SELECT nome FROM empresas WHERE id = $1", [colab.empresa_id]);
     const empresa = empresaResult.rows[0] as { nome: string } | undefined;
+    const envioResult = await db.query(
+      `SELECT e.id FROM envios e
+       JOIN envio_destinatarios ed ON ed.envio_id = e.id
+       WHERE e.codigo = $1 AND ed.colaborador_id = $2 AND e.estado = 'aberto'
+       ORDER BY e.data_envio DESC LIMIT 1`,
+      [codigo.toUpperCase(), colab.id]
+    );
+    const envioId = envioResult.rows[0]?.id;
     const token = await signSession({
       sub: colab.id,
       role: "colaborador",
@@ -128,8 +136,9 @@ export async function POST(request: Request) {
       email: colab.email,
       empresaId: colab.empresa_id,
       empresaNome: empresa?.nome,
+      envioId,
     });
-    const res = NextResponse.json({ role: "colaborador", nome: colab.nome, email: colab.email, empresaId: colab.empresa_id, empresaNome: empresa?.nome });
+    const res = NextResponse.json({ role: "colaborador", nome: colab.nome, email: colab.email, empresaId: colab.empresa_id, empresaNome: empresa?.nome, envioId });
     const secure = process.env.NODE_ENV === 'production';
     res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
