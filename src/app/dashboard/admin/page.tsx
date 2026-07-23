@@ -41,8 +41,8 @@ const TABS = [
 function AdminDashboardContent() {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") || "dashboard";
+  useSearchParams();
+  const tab = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "dashboard" : "dashboard";
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [dataLoading, setDataLoading] = useState(true);
 
