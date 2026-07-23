@@ -23,7 +23,7 @@ declare global {
 function getPool(): Pool {
   if (!globalThis.__humanupPool) {
     const connectionString = requireEnv("POSTGRES_URL");
-    const isLocal = /localhost|127\.0\.0\.1/.test(connectionString);
+    const isLocal = /localhost|127\.0\.0\.1|::1|db/.test(connectionString);
     globalThis.__humanupPool = new Pool({
       connectionString,
       ssl: isLocal ? undefined : true,

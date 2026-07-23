@@ -39,3 +39,7 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
 }
 
 export const SESSION_COOKIE = "hup_session";
+
+export function cookieSecure(): boolean {
+  return process.env.NODE_ENV === 'production' && !process.env.DISABLE_SECURE_COOKIES;
+}

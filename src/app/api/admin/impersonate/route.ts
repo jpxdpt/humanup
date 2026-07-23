@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db-server";
-import { signSession, SESSION_COOKIE } from "@/lib/jwt";
+import { signSession, SESSION_COOKIE, cookieSecure } from "@/lib/jwt";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,8 +24,7 @@ export async function POST(request: NextRequest) {
     });
 
     const res = NextResponse.json({ success: true });
-    const secure = process.env.NODE_ENV === "production";
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 });
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: cookieSecure(), sameSite: "lax", path: "/", maxAge: 60 * 60 });
     return res;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Erro interno";

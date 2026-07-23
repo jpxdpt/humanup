@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { getDb } from "@/lib/db-server";
-import { signSession, SESSION_COOKIE } from "@/lib/jwt";
+import { signSession, SESSION_COOKIE, cookieSecure } from "@/lib/jwt";
 
 const loginSchema = z.object({
   role: z.enum(["admin", "ceo", "colaborador"]),
@@ -80,8 +80,7 @@ export async function POST(request: Request) {
     }
     const token = await signSession({ sub: admin.id, role: "admin", nome: admin.nome, email: admin.email });
     const res = NextResponse.json({ role: "admin", nome: admin.nome, email: admin.email });
-    const secure = process.env.NODE_ENV === 'production';
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: cookieSecure(), sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 
@@ -104,8 +103,7 @@ export async function POST(request: Request) {
       empresaNome: empresa.nome,
     });
     const res = NextResponse.json({ role: "ceo", nome: empresa.ceo_nome, email: empresa.ceo_email, empresaId: empresa.id, empresaNome: empresa.nome });
-    const secure = process.env.NODE_ENV === 'production';
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: cookieSecure(), sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 
@@ -139,8 +137,7 @@ export async function POST(request: Request) {
       envioId,
     });
     const res = NextResponse.json({ role: "colaborador", nome: colab.nome, email: colab.email, empresaId: colab.empresa_id, empresaNome: empresa?.nome, envioId });
-    const secure = process.env.NODE_ENV === 'production';
-    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
+    res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, secure: cookieSecure(), sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 });
     return res;
   }
 
