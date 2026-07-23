@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { DashboardLayout, KpiCard, Panel, Badge, EmptyState } from "@/components/dashboard";
 import {
   QuestionarioBuilder,
@@ -41,10 +41,15 @@ const TABS = [
 function AdminDashboardContent() {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  useSearchParams();
-  const tab = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "dashboard" : "dashboard";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState("dashboard");
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    setTab(searchParams?.get?.("tab") || "dashboard");
+  }, [pathname, searchParams]);
 
   const fetchData = useCallback(async () => {
     try {
