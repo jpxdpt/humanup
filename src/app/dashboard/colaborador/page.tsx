@@ -3,40 +3,72 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { DashboardLayout, Panel } from "@/components/dashboard";
+import { DashboardLayout } from "@/components/dashboard";
+
+interface Pergunta {
+  id: string;
+  texto: string;
+  tipo: string;
+}
+
+interface Questionario {
+  perguntas: Pergunta[];
+}
+
+interface EnvioColaborador {
+  id: string;
+  quest_nome: string;
+  questionario: Questionario;
+}
 
 export default function ColaboradorDashboard() {
   const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const [respostas, setRespostas] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"" | "submitting" | "success" | "error">("");
-  const [envio, setEnvio] = useState<any>(null);
+  const [envio, setEnvio] = useState<EnvioColaborador | null | "loading">("loading");
 
   useEffect(() => {
     if (loading) return;
-    if (!isAuthenticated || user?.role !== "colaborador") router.push("/login");
-    else if (user?.envioId) {
-      fetch(`/api/respostas?envio_id=${user.envioId}`)
-        .then((r) => r.json())
-        .then((data) => setEnvio(data.envio || null))
-        .catch(() => {});
-    }
+    if (!isAuthenticated || user?.role !== "colaborador") { router.push("/login"); return; }
+    if (!user?.envioId) { setEnvio(null); return; }
+    fetch(`/api/respostas?envio_id=${user.envioId}`)
+      .then((r) => r.json())
+      .then((data) => setEnvio(data.envio || null))
+      .catch(() => setEnvio(null));
   }, [isAuthenticated, user, router, loading]);
 
   if (loading || !isAuthenticated || user?.role !== "colaborador") return null;
 
-  const perguntas: { id: string; texto: string; tipo: string }[] = envio?.questionario?.perguntas?.filter((p: any) => p.texto.trim()) || [
-    { id: "q1", texto: "Sinto-me motivado(a) no meu trabalho atual.", tipo: "escala" },
-    { id: "q2", texto: "Recomendaria a minha empresa como um bom local para trabalhar.", tipo: "nps" },
-    { id: "q3", texto: "A minha carga de trabalho é adequada.", tipo: "escala" },
-    { id: "q4", texto: "Sinto que sou valorizado(a) pela liderança.", tipo: "escala" },
-    { id: "q5", texto: "Como descreveria o ambiente de trabalho na sua equipa?", tipo: "texto" },
-  ];
+  if (envio === "loading") {
+    return (
+      <DashboardLayout>
+        <div className="max-w-3xl mx-auto flex items-center justify-center py-24">
+          <span className="material-symbols-outlined text-4xl text-primary animate-spin">sync</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
+  if (!envio) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-3xl mx-auto text-center py-24">
+          <span className="material-symbols-outlined text-5xl text-secondary/50 mb-4">assignment_late</span>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Nenhum questionário disponível</h2>
+          <p className="font-body-md text-body-md text-secondary">De momento não tem nenhum questionário para responder.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const perguntas = envio.questionario?.perguntas?.filter((p: Pergunta) => p.texto.trim()) || [];
   const totalPerguntas = perguntas.length;
   const progresso = Object.keys(respostas).length;
+  const jaSubmeteu = status === "success";
 
   function responder(id: string, valor: string) {
+    if (jaSubmeteu) return;
     setRespostas((prev) => ({ ...prev, [id]: valor }));
   }
 
@@ -89,7 +121,8 @@ export default function ColaboradorDashboard() {
                     <button
                       key={n}
                       onClick={() => responder(pq.id, String(n))}
-                      className={`w-9 h-9 rounded-lg font-label-caps text-label-caps transition-all cursor-pointer ${
+                      disabled={jaSubmeteu}
+                      className={`w-9 h-9 rounded-lg font-label-caps text-label-caps transition-all cursor-pointer disabled:cursor-not-allowed ${
                         respostas[pq.id] === String(n)
                           ? "bg-primary text-on-primary"
                           : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary"
@@ -107,7 +140,8 @@ export default function ColaboradorDashboard() {
                     <button
                       key={n}
                       onClick={() => responder(pq.id, String(n))}
-                      className={`w-8 h-8 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
+                      disabled={jaSubmeteu}
+                      className={`w-8 h-8 rounded-lg text-[10px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed ${
                         respostas[pq.id] === String(n)
                           ? "bg-primary text-on-primary"
                           : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary"
@@ -123,7 +157,8 @@ export default function ColaboradorDashboard() {
                 <textarea
                   value={respostas[pq.id] || ""}
                   onChange={(e) => responder(pq.id, e.target.value)}
-                  className="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary-container resize-none"
+                  disabled={jaSubmeteu}
+                  className="w-full px-3 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary-container resize-none disabled:opacity-50"
                   rows={3}
                   placeholder="Partilhe a sua opinião (opcional)..."
                 />
@@ -145,10 +180,10 @@ export default function ColaboradorDashboard() {
 
         <button
           onClick={submeter}
-          disabled={progresso < totalPerguntas || status === "submitting"}
+          disabled={progresso < totalPerguntas || status === "submitting" || jaSubmeteu}
           className="mt-8 w-full bg-primary text-on-primary font-button text-button rounded-lg px-6 py-3.5 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
-          {status === "submitting" ? "A submeter..." : progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "✓ Submeter Questionário"}
+          {jaSubmeteu ? "✓ Submetido" : status === "submitting" ? "A submeter..." : progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "Submeter Questionário"}
         </button>
       </div>
     </DashboardLayout>

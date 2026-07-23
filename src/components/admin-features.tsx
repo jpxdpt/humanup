@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Panel, Badge, EmptyState } from "@/components/dashboard";
+import { PaginationControls } from "@/components/PaginationControls";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
@@ -164,15 +165,22 @@ export function QuestionarioBuilder() {
   const [perguntas, setPerguntas] = useState<Pergunta[]>([]);
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [qOffset, setQOffset] = useState(0);
+  const [qTotal, setQTotal] = useState(0);
+  const PAGE_LIMIT = 10;
 
-  const carregar = useCallback(async () => {
-    const [qRes, dRes] = await Promise.all([api("questionario_list"), api("dimensao_list")]);
-    if (qRes.success) setQuestionarios(qRes.data);
+  const carregar = useCallback(async (qOff = qOffset) => {
+    setLoading(true);
+    const [qRes, dRes] = await Promise.all([
+      api("questionario_list", { limit: PAGE_LIMIT, offset: qOff }),
+      api("dimensao_list", { limit: 100 }),
+    ]);
+    if (qRes.success) { setQuestionarios(qRes.data); setQTotal(qRes.count || 0); }
     if (dRes.success) setDimensoes(dRes.data);
     setLoading(false);
-  }, [api]);
+  }, [api, qOffset]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(qOffset); }, [carregar, qOffset]);
 
   function novaPergunta(tipoP: string) {
     setPerguntas([...perguntas, { tipo: tipoP, texto: "", dim: "", obrig: "sim", opcoes: tipoP === "escolha" ? ["Opcao 1", "Opcao 2"] : [] }]);
@@ -438,6 +446,7 @@ export function QuestionarioBuilder() {
             })}
           </div>
         )}
+        <PaginationControls offset={qOffset} limit={PAGE_LIMIT} total={qTotal} onChange={setQOffset} />
       </Panel>
     </div>
   );
@@ -461,20 +470,24 @@ export function EnvioQuestionarios() {
   const [dataLimite, setDataLimite] = useState("");
   const [codigoGerado, setCodigoGerado] = useState("");
   const [envioExpandido, setEnvioExpandido] = useState<string | null>(null);
+  const [envOffset, setEnvOffset] = useState(0);
+  const [envTotal, setEnvTotal] = useState(0);
+  const PAGE_LIMIT = 10;
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(async (offset = envOffset) => {
+    setLoading(true);
     const [eRes, qRes, envRes] = await Promise.all([
-      api("questionario_list"),
+      api("questionario_list", { limit: 100 }),
       fetch("/api/dashboard/empresas").then((r) => r.json()),
-      api("envio_list"),
+      api("envio_list", { limit: PAGE_LIMIT, offset }),
     ]);
     if (qRes.success) setEmpresas(qRes.empresas || []);
     if (eRes.success) setQuestionarios(eRes.data);
-    if (envRes.success) setEnvios(envRes.data);
+    if (envRes.success) { setEnvios(envRes.data); setEnvTotal(envRes.count || 0); }
     setLoading(false);
-  }, [api]);
+  }, [api, envOffset]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(envOffset); }, [carregar, envOffset]);
 
   useEffect(() => {
     if (!empresaId) { setColaboradores([]); setLocalizacao(""); setDepartamento(""); setColaboradorId(""); return; }
@@ -653,6 +666,7 @@ export function EnvioQuestionarios() {
             ))}
           </div>
         )}
+        <PaginationControls offset={envOffset} limit={PAGE_LIMIT} total={envTotal} onChange={setEnvOffset} />
       </Panel>
     </div>
   );
@@ -680,44 +694,56 @@ export function MensagensAdmin() {
     if (res.success) setMensagens(res.data);
   }, [api]);
 
+  const atualizarUnread = useCallback(async () => {
+    const res = await api("mensagem_unread_count");
+    if (res.success) setUnread(res.count);
+  }, [api]);
+
+  const atualizarTudo = useCallback(async () => {
+    if (empresaAtiva) await carregarMensagens(empresaAtiva);
+    await atualizarUnread();
+  }, [empresaAtiva, carregarMensagens, atualizarUnread]);
+
   useEffect(() => { carregarEmpresas(); }, [carregarEmpresas]);
 
   useEffect(() => {
-    if (empresaAtiva) carregarMensagens(empresaAtiva);
-  }, [empresaAtiva, carregarMensagens]);
+    if (empresaAtiva) atualizarTudo();
+  }, [empresaAtiva, atualizarTudo]);
 
   useEffect(() => {
     chatEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensagens]);
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (empresaAtiva) carregarMensagens(empresaAtiva);
-      const res = await api("mensagem_unread_count");
-      if (res.success) setUnread(res.count);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [empresaAtiva, api, carregarMensagens]);
-
   async function enviarMensagem() {
     if (!empresaAtiva || !texto.trim()) return;
     await api("mensagem_insert", { empresa_id: empresaAtiva, de: "admin", texto: texto.trim() });
     setTexto("");
-    carregarMensagens(empresaAtiva);
+    await carregarMensagens(empresaAtiva);
+    await atualizarUnread();
   }
 
   async function marcarLidas() {
     if (!empresaAtiva) return;
     await api("mensagem_mark_read", { empresa_id: empresaAtiva });
-    carregarMensagens(empresaAtiva);
+    await carregarMensagens(empresaAtiva);
+    await atualizarUnread();
   }
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[600px]">
       <div className="lg:w-72 flex-shrink-0 border border-outline-variant rounded-xl bg-surface-container-lowest overflow-hidden flex flex-col">
         <div className="p-4 border-b border-surface-variant flex items-center justify-between">
-          <LabelCaps>Conversas</LabelCaps>
-          {unread > 0 && <span className="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full">{unread} nova(s)</span>}
+          <div className="flex items-center gap-2">
+            <LabelCaps>Conversas</LabelCaps>
+            {unread > 0 && <span className="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full">{unread} nova(s)</span>}
+          </div>
+          <button
+            onClick={atualizarTudo}
+            title="Atualizar conversas"
+            className="p-1.5 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">refresh</span>
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {empresas.map((emp) => (
@@ -907,13 +933,18 @@ export function RelatoriosEnviados() {
   const api = useAdminApi();
   const [envios, setEnvios] = useState<Envio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+  const PAGE_LIMIT = 10;
 
-  useEffect(() => {
-    api("envio_list").then((res) => {
-      if (res.success) setEnvios(res.data);
-      setLoading(false);
-    });
-  }, [api]);
+  const carregar = useCallback(async (off = offset) => {
+    setLoading(true);
+    const res = await api("envio_list", { limit: PAGE_LIMIT, offset: off });
+    if (res.success) { setEnvios(res.data); setTotal(res.count || 0); }
+    setLoading(false);
+  }, [api, offset]);
+
+  useEffect(() => { carregar(offset); }, [carregar, offset]);
 
   if (loading) return <div className="text-center py-8 text-secondary font-body-md">A carregar...</div>;
 
@@ -944,6 +975,7 @@ export function RelatoriosEnviados() {
           ))}
         </div>
       )}
+      <PaginationControls offset={offset} limit={PAGE_LIMIT} total={total} onChange={setOffset} />
     </Panel>
   );
 }
@@ -959,13 +991,19 @@ export function DocumentosAdmin() {
   const [descricao, setDescricao] = useState("");
   const [ficheiro, setFicheiro] = useState<File | null>(null);
   const [aCarregar, setACarregar] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+  const PAGE_LIMIT = 10;
 
-  const carregar = useCallback(async () => {
-    const res = await api("documento_list");
-    if (res.success) setDocumentos(res.data);
-  }, [api]);
+  const carregar = useCallback(async (off = offset) => {
+    setLoading(true);
+    const res = await api("documento_list", { limit: PAGE_LIMIT, offset: off });
+    if (res.success) { setDocumentos(res.data); setTotal(res.count || 0); }
+    setLoading(false);
+  }, [api, offset]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(offset); }, [carregar, offset]);
 
   async function guardar() {
     if (!nome.trim()) { toast.error("Introduza o nome do documento."); return; }
@@ -991,6 +1029,8 @@ export function DocumentosAdmin() {
       setACarregar(false);
     }
   }
+
+  if (loading) return <div className="text-center py-8 text-secondary font-body-md">A carregar...</div>;
 
   return (
     <div className="space-y-4">
@@ -1066,6 +1106,7 @@ export function DocumentosAdmin() {
             ))}
           </div>
         )}
+        <PaginationControls offset={offset} limit={PAGE_LIMIT} total={total} onChange={setOffset} />
       </Panel>
     </div>
   );
@@ -1080,13 +1121,16 @@ export function PacotesAdmin() {
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [preco, setPreco] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+  const PAGE_LIMIT = 9;
 
-  const carregar = useCallback(async () => {
-    const res = await api("pacote_list");
-    if (res.success) setPacotes(res.data);
-  }, [api]);
+  const carregar = useCallback(async (off = offset) => {
+    const res = await api("pacote_list", { limit: PAGE_LIMIT, offset: off });
+    if (res.success) { setPacotes(res.data); setTotal(res.count || 0); }
+  }, [api, offset]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(offset); }, [carregar, offset]);
 
   function editar(p: Pacote) {
     setEditando(p.id);
@@ -1157,6 +1201,7 @@ export function PacotesAdmin() {
             ))}
           </div>
         )}
+        <PaginationControls offset={offset} limit={PAGE_LIMIT} total={total} onChange={setOffset} />
       </Panel>
     </div>
   );
@@ -1170,13 +1215,16 @@ export function DimensoesAdmin() {
   const [nome, setNome] = useState("");
   const [cor, setCor] = useState("gold");
   const [descricao, setDescricao] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+  const PAGE_LIMIT = 10;
 
-  const carregar = useCallback(async () => {
-    const res = await api("dimensao_list");
-    if (res.success) setDimensoes(res.data);
-  }, [api]);
+  const carregar = useCallback(async (off = offset) => {
+    const res = await api("dimensao_list", { limit: PAGE_LIMIT, offset: off });
+    if (res.success) { setDimensoes(res.data); setTotal(res.count || 0); }
+  }, [api, offset]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => { carregar(offset); }, [carregar, offset]);
 
   async function adicionar() {
     if (!nome.trim()) { toast.error("Introduza o nome da dimensao."); return; }
@@ -1249,6 +1297,7 @@ export function DimensoesAdmin() {
             })}
           </div>
         )}
+        <PaginationControls offset={offset} limit={PAGE_LIMIT} total={total} onChange={setOffset} />
       </Panel>
     </div>
   );
@@ -1279,7 +1328,7 @@ export function DefinicoesAdmin() {
     setSaving(true);
     const body: Record<string, unknown> = { id: "admin-1", nome: nome.trim(), email: email.trim() };
     if (passwordNova) body.password = passwordNova;
-    const res = await api("admin_update", body as any);
+    const res = await api("admin_update", body);
     if (res.success) toast.success("Definicoes atualizadas.");
     else toast.error("Erro ao guardar.");
     setSaving(false);

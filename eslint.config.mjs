@@ -5,6 +5,14 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // This rule flags common data-fetching patterns in useEffect. The project
+      // relies extensively on fetching inside effects, so we disable it to avoid
+      // pervasive false positives while keeping the rest of the React hooks rules.
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

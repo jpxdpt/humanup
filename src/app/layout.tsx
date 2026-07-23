@@ -49,8 +49,8 @@ export default function RootLayout({
         <Providers>
           <SmoothScroll />
           <PageFade>{children}</PageFade>
+          <AdminBar />
         </Providers>
-        <AdminBar />
       </body>
     </html>
   );

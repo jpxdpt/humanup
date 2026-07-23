@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { getDb } from "@/lib/db-server";
 import { verifySession, SESSION_COOKIE } from "@/lib/jwt";
@@ -60,20 +61,16 @@ export async function POST(request: Request) {
   const { respostas } = body;
   const db = await getDb();
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS respostas (
-      id SERIAL PRIMARY KEY,
-      envio_id TEXT,
-      colaborador_id TEXT NOT NULL,
-      empresa_id TEXT NOT NULL,
-      quest_ref TEXT DEFAULT '',
-      respostas JSONB NOT NULL DEFAULT '{}',
-      created_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
+  const existing = await db.query(
+    "SELECT id FROM respostas WHERE envio_id = $1 AND colaborador_id = $2",
+    [session.envioId || null, session.sub]
+  );
+  if (existing.rowCount && existing.rowCount > 0) {
+    return NextResponse.json({ ok: true, duplicate: true });
+  }
 
   await db.query(
-    "INSERT INTO respostas (envio_id, colaborador_id, empresa_id, quest_ref, respostas) VALUES ($1, $2, $3, $4, $5)",
+    "INSERT INTO respostas (envio_id, colaborador_id, empresa_id, quest_ref, respostas) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (envio_id, colaborador_id) DO NOTHING",
     [session.envioId || null, session.sub, session.empresaId || "", "", JSON.stringify(respostas)]
   );
 
@@ -86,6 +83,10 @@ export async function POST(request: Request) {
       "UPDATE envios SET respostas = respostas + 1 WHERE id = $1",
       [session.envioId]
     );
+  }
+
+  if (session.empresaId) {
+    revalidateTag("ceo-dashboard-data", "default");
   }
 
   return NextResponse.json({ ok: true });

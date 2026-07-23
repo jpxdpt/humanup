@@ -152,6 +152,12 @@ async function migrate(pool: Pool) {
       respondido BOOLEAN DEFAULT false, created_at TIMESTAMPTZ DEFAULT now(),
       UNIQUE(envio_id, colaborador_id)
     );
+    CREATE TABLE IF NOT EXISTS respostas (
+      id SERIAL PRIMARY KEY, envio_id TEXT, colaborador_id TEXT NOT NULL,
+      empresa_id TEXT NOT NULL, quest_ref TEXT DEFAULT '',
+      respostas JSONB NOT NULL DEFAULT '{}', created_at TIMESTAMPTZ DEFAULT now(),
+      UNIQUE(envio_id, colaborador_id)
+    );
     ALTER TABLE envios DROP CONSTRAINT IF EXISTS envios_codigo_key;
   `);
 

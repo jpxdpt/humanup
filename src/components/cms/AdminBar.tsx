@@ -1,38 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
-
-interface SessionUser {
-  role: string;
-  nome: string;
-  email?: string;
-}
+import { useAuth } from "@/lib/auth";
+import { useMounted } from "@/hooks/use-mounted";
 
 export function AdminBar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const { user, isAuthenticated, loading } = useAuth();
+  const [editMode, setEditMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("hup_edit_mode") === "true";
+  });
+  const mounted = useMounted();
 
-  useEffect(() => {
-    setMounted(true);
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => setUser(data.user))
-      .catch(() => setUser(null));
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    const saved = sessionStorage.getItem("hup_edit_mode");
-    if (saved === "true") setEditMode(true);
-  }, [mounted]);
-
-  if (!mounted) return null;
-  if (!user || user.role !== "admin") return null;
+  if (!mounted || loading) return null;
+  if (!isAuthenticated || user?.role !== "admin") return null;
   if (pathname?.startsWith("/dashboard")) return null;
 
   const toggleEdit = () => {
