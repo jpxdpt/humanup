@@ -361,6 +361,45 @@ export async function POST(request: NextRequest) {
         revalidateDashboardTags(empresa_id);
         return NextResponse.json({ success: true, results });
       }
+      case "colaborador_insert": {
+        const { empresa_id, nome, email, nif, localizacao, departamento, cargo } = body;
+        const id = randomUUID();
+        const code = randomUUID().replace(/-/g, "").substring(0, 12).toUpperCase();
+        const hash = bcrypt.hashSync(code, 10);
+        await db.query(
+          "INSERT INTO colaboradores (id, empresa_id, nome, email, nif, access_code_hash, localizacao, departamento, cargo, estado) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+          [id, empresa_id, nome, email || "", nif, hash, localizacao || "", departamento || "", cargo || "", "ativo"]
+        );
+        await db.query("UPDATE empresas SET ncolab = ncolab + 1 WHERE id = $1", [empresa_id]);
+        revalidateDashboardTags(empresa_id);
+        return NextResponse.json({ success: true, id, codigo: code });
+      }
+      case "colaborador_update": {
+        const { id, nome, email, nif, localizacao, departamento, cargo, estado } = body;
+        const sets: string[] = [];
+        const params: unknown[] = [];
+        let idx = 1;
+        if (nome !== undefined) { sets.push(`nome = $${idx++}`); params.push(nome); }
+        if (email !== undefined) { sets.push(`email = $${idx++}`); params.push(email); }
+        if (nif !== undefined) { sets.push(`nif = $${idx++}`); params.push(nif); }
+        if (localizacao !== undefined) { sets.push(`localizacao = $${idx++}`); params.push(localizacao); }
+        if (departamento !== undefined) { sets.push(`departamento = $${idx++}`); params.push(departamento); }
+        if (cargo !== undefined) { sets.push(`cargo = $${idx++}`); params.push(cargo); }
+        if (estado !== undefined) { sets.push(`estado = $${idx++}`); params.push(estado); }
+        if (!sets.length) return NextResponse.json({ success: false, error: "Nada para atualizar" });
+        params.push(id);
+        await db.query(`UPDATE colaboradores SET ${sets.join(", ")} WHERE id = $${idx}`, params);
+        revalidateDashboardTags();
+        return NextResponse.json({ success: true });
+      }
+      case "colaborador_delete": {
+        const col = await db.query("SELECT empresa_id FROM colaboradores WHERE id = $1", [body.id]);
+        const empId = col.rows[0]?.empresa_id;
+        await db.query("DELETE FROM colaboradores WHERE id = $1", [body.id]);
+        if (empId) await db.query("UPDATE empresas SET ncolab = GREATEST(ncolab - 1, 0) WHERE id = $1", [empId]);
+        revalidateDashboardTags(empId);
+        return NextResponse.json({ success: true });
+      }
 
       // --- Empresas CRUD ---
       case "empresa_list": {
