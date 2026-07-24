@@ -18,5 +18,5 @@ export async function GET() {
   const db = await getDb();
   const result = await db.query("SELECT * FROM empresas ORDER BY nome");
 
-  return NextResponse.json({ empresas: result.rows });
+  return NextResponse.json({ success: true, empresas: result.rows });
 }
