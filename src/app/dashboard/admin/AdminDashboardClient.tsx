@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardLayout, KpiCard, Panel } from "@/components/dashboard";
@@ -16,6 +16,7 @@ import {
   DefinicoesAdmin,
 } from "@/components/admin-features";
 import { ClientesTab } from "./ClientesTab";
+import { animateEnter, slideUp, spring } from "@/lib/animations";
 
 interface DashboardData {
   totalEmpresas: number;
@@ -43,11 +44,18 @@ function AdminDashboardContent({ initialData }: { initialData: DashboardData }) 
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams?.get?.("tab") || "dashboard";
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated || user?.role !== "admin") router.push("/login");
   }, [isAuthenticated, user, router, loading]);
+
+  useEffect(() => {
+    if (tab === "dashboard" && dashboardRef.current) {
+      animateEnter(dashboardRef.current, slideUp, spring.gentle);
+    }
+  }, [tab]);
 
   if (loading || !isAuthenticated || user?.role !== "admin") return null;
 
@@ -61,8 +69,9 @@ function AdminDashboardContent({ initialData }: { initialData: DashboardData }) 
 
   return (
     <DashboardLayout>
+      <div key={tab} className="apple-tab-enter">
       {tab === "dashboard" && (
-        <>
+        <div ref={dashboardRef}>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-margin-md">
             <div>
               <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-1">Painel Administrador</h2>
@@ -91,9 +100,9 @@ function AdminDashboardContent({ initialData }: { initialData: DashboardData }) 
                 <button
                   key={item.tab}
                   onClick={() => router.push("/dashboard/admin?tab=" + item.tab)}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-outline-variant hover:border-primary hover:bg-surface-bright transition-all text-center group cursor-pointer"
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-outline-variant hover:border-primary hover:bg-surface-bright transition-all duration-150 text-center group cursor-pointer active:scale-[0.98]"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all duration-150">
                     <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
                   </div>
                   <span className="font-button text-button text-on-surface">{item.label}</span>
@@ -101,7 +110,7 @@ function AdminDashboardContent({ initialData }: { initialData: DashboardData }) 
               ))}
             </div>
           </Panel>
-        </>
+        </div>
       )}
 
       {tab === "clientes" && <ClientesTab />}
@@ -195,6 +204,7 @@ function AdminDashboardContent({ initialData }: { initialData: DashboardData }) 
           <DefinicoesAdmin />
         </>
       )}
+      </div>
     </DashboardLayout>
   );
 }

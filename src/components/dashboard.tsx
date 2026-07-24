@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { animateEnter, slideUp, spring } from "@/lib/animations";
 
 type Notification = {
   id: number;
@@ -46,6 +48,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -69,7 +73,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("mousedown", handler);
   }, [notifOpen]);
 
-  const markAsRead = async (ids?: number[]) => {
+  useEffect(() => {
+    if (mobileMenuOpen && sidebarRef.current) {
+      animateEnter(sidebarRef.current, { x: [-260, 0] }, spring.gentle);
+    }
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      animateEnter(mainRef.current, slideUp, spring.gentle);
+    }
+  }, [tab]);
+
+  const markAsRead = useCallback(async (ids?: number[]) => {
     const body = ids ? { ids } : { all: true };
     await fetch("/api/notifications", {
       method: "PATCH",
@@ -81,7 +97,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     );
     if (!ids) setUnreadCount(0);
     else setUnreadCount((prev) => Math.max(0, prev - ids.length));
-  };
+  }, []);
 
   const isActive = (href: string) => {
     const [hrefPath, hrefQuery] = href.split("?");
@@ -89,64 +105,80 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return pathname === hrefPath && tab === hrefTab;
   };
 
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-on-surface font-body-md antialiased">
       {/* Mobile backdrop */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden transition-opacity duration-200"
+          onClick={closeMobileMenu}
+        />
       )}
 
       {/* Sidebar */}
-      <aside className={`bg-surface-container-low h-screen w-64 fixed left-0 top-0 border-r border-surface-variant flex flex-col py-margin-md px-margin-sm gap-2 z-50 transition-transform duration-300 ease-in-out ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
-        <div className="flex items-center gap-3 px-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+      <aside
+        ref={sidebarRef}
+        className={cn(
+          "bg-surface-container-low/90 backdrop-blur-xl h-screen w-64 fixed left-0 top-0 border-r border-surface-variant/60 flex flex-col py-6 px-3 gap-1 z-50",
+          "transition-transform duration-200 ease-out",
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
+        <div className="flex items-center gap-3 px-3 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-lg shadow-sm shadow-primary/25">
             H
           </div>
           <div>
-            <h1 className="font-headline-md text-headline-md font-bold text-primary leading-none tracking-tight">HumanUp</h1>
-            <p className="font-body-sm text-body-sm text-secondary mt-1">{roleLabel}</p>
+            <h1 className="font-headline-md text-headline-md font-bold text-primary leading-tight tracking-tight">HumanUp</h1>
+            <p className="font-body-sm text-body-sm text-secondary mt-0.5">{roleLabel}</p>
           </div>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-1">
+        <nav className="flex-1 flex flex-col gap-0.5">
           {user?.role === "admin" && (
             <>
-              <NavItem href="/dashboard/admin" icon="dashboard" label="Painel" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin")} />
-              <NavItem href="/dashboard/admin?tab=clientes" icon="groups" label="Clientes" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=clientes")} />
-              <NavItem href="/dashboard/admin?tab=questionarios" icon="description" label="Questionários" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=questionarios")} />
-              <NavItem href="/dashboard/admin?tab=envios" icon="send" label="Envios" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=envios")} />
-              <NavItem href="/dashboard/admin?tab=colaboradores" icon="person_add" label="Importar" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=colaboradores")} />
-              <NavItem href="/dashboard/admin?tab=mensagens" icon="forum" label="Mensagens" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=mensagens")} />
-              <NavItem href="/dashboard/admin?tab=relatorios" icon="analytics" label="Relatórios" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=relatorios")} />
-              <NavItem href="/dashboard/admin?tab=documentos" icon="folder" label="Documentos" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=documentos")} />
-              <NavItem href="/dashboard/admin?tab=pacotes" icon="inventory_2" label="Pacotes" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=pacotes")} />
-              <NavItem href="/dashboard/admin?tab=dimensoes" icon="donut_large" label="Dimensões" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=dimensoes")} />
-              <NavItem href="/dashboard/admin?tab=definicoes" icon="settings" label="Definições" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/admin?tab=definicoes")} />
+              <NavItem href="/dashboard/admin" icon="dashboard" label="Painel" onClick={closeMobileMenu} active={isActive("/dashboard/admin")} />
+              <NavItem href="/dashboard/admin?tab=clientes" icon="groups" label="Clientes" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=clientes")} />
+              <NavItem href="/dashboard/admin?tab=questionarios" icon="description" label="Questionários" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=questionarios")} />
+              <NavItem href="/dashboard/admin?tab=envios" icon="send" label="Envios" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=envios")} />
+              <NavItem href="/dashboard/admin?tab=colaboradores" icon="person_add" label="Importar" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=colaboradores")} />
+              <NavItem href="/dashboard/admin?tab=mensagens" icon="forum" label="Mensagens" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=mensagens")} />
+              <NavItem href="/dashboard/admin?tab=relatorios" icon="analytics" label="Relatórios" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=relatorios")} />
+              <NavItem href="/dashboard/admin?tab=documentos" icon="folder" label="Documentos" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=documentos")} />
+              <NavItem href="/dashboard/admin?tab=pacotes" icon="inventory_2" label="Pacotes" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=pacotes")} />
+              <NavItem href="/dashboard/admin?tab=dimensoes" icon="donut_large" label="Dimensões" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=dimensoes")} />
+              <NavItem href="/dashboard/admin?tab=definicoes" icon="settings" label="Definições" onClick={closeMobileMenu} active={isActive("/dashboard/admin?tab=definicoes")} />
             </>
           )}
           {(user?.role === "ceo" || user?.role === "gestor") && (
             <>
-              <NavItem href="/dashboard/ceo" icon="dashboard" label="Painel" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo")} />
-              <NavItem href="/dashboard/ceo?tab=equipa" icon="groups" label="Equipa" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo?tab=equipa")} />
-              <NavItem href="/dashboard/ceo?tab=faturas" icon="receipt" label="Faturas" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo?tab=faturas")} />
-              <NavItem href="/dashboard/ceo?tab=recursos" icon="folder" label="Recursos" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/ceo?tab=recursos")} />
+              <NavItem href="/dashboard/ceo" icon="dashboard" label="Painel" onClick={closeMobileMenu} active={isActive("/dashboard/ceo")} />
+              <NavItem href="/dashboard/ceo?tab=equipa" icon="groups" label="Equipa" onClick={closeMobileMenu} active={isActive("/dashboard/ceo?tab=equipa")} />
+              <NavItem href="/dashboard/ceo?tab=faturas" icon="receipt" label="Faturas" onClick={closeMobileMenu} active={isActive("/dashboard/ceo?tab=faturas")} />
+              <NavItem href="/dashboard/ceo?tab=recursos" icon="folder" label="Recursos" onClick={closeMobileMenu} active={isActive("/dashboard/ceo?tab=recursos")} />
             </>
           )}
           {user?.role === "colaborador" && (
-            <>
-              <NavItem href="/dashboard/colaborador" icon="assignment" label="Questionário" onClick={() => setMobileMenuOpen(false)} active={isActive("/dashboard/colaborador")} />
-            </>
+            <NavItem href="/dashboard/colaborador" icon="assignment" label="Questionário" onClick={closeMobileMenu} active={isActive("/dashboard/colaborador")} />
           )}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-surface-variant flex flex-col gap-1">
-          <button onClick={() => setMobileMenuOpen(false)} className="text-secondary hover:bg-surface-container-high transition-all rounded-lg flex items-center gap-3 px-3 py-2.5 cursor-pointer w-full text-left">
-            <span className="material-symbols-outlined">contact_support</span>
-            <span className="font-label-caps text-label-caps">Ajuda</span>
+        <div className="mt-auto pt-4 border-t border-surface-variant/60 flex flex-col gap-0.5">
+          <button
+            onClick={closeMobileMenu}
+            className="text-secondary hover:bg-surface-container rounded-xl flex items-center gap-3 px-3 py-2.5 cursor-pointer w-full text-left transition-all duration-150 active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-[20px]">contact_support</span>
+            <span className="font-button text-button">Ajuda</span>
           </button>
-          <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-secondary hover:bg-surface-container-high transition-all rounded-lg flex items-center gap-3 px-3 py-2.5 cursor-pointer w-full text-left">
-            <span className="material-symbols-outlined">logout</span>
-            <span className="font-label-caps text-label-caps">Sair</span>
+          <button
+            onClick={() => { logout(); closeMobileMenu(); }}
+            className="text-secondary hover:bg-surface-container rounded-xl flex items-center gap-3 px-3 py-2.5 cursor-pointer w-full text-left transition-all duration-150 active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span className="font-button text-button">Sair</span>
           </button>
         </div>
       </aside>
@@ -154,16 +186,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <div className="flex-1 flex flex-col ml-0 md:ml-64 w-full h-screen relative">
         {/* Topbar */}
-        <header className="bg-surface-container-lowest w-full h-16 sticky top-0 border-b border-surface-variant shadow-sm flex justify-between items-center px-container-padding z-40">
-          <div className="flex-1 flex items-center">
-            <span className="text-body-md text-on-surface font-medium hidden md:block">Bem-vindo(a), {user?.nome || "Utilizador"}</span>
-            <button className="md:hidden p-2 text-secondary cursor-pointer active:scale-95 transition-transform hover:bg-surface-container rounded-full" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        <header className="bg-surface-container-lowest/80 backdrop-blur-xl w-full h-16 sticky top-0 border-b border-surface-variant/60 flex justify-between items-center px-6 z-40">
+          <div className="flex-1 flex items-center gap-4">
+            <button
+              className="md:hidden p-2 text-secondary cursor-pointer active:scale-95 transition-transform hover:bg-surface-container rounded-full"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
               <span className="material-symbols-outlined">menu</span>
             </button>
+            <span className="text-body-md text-on-surface font-medium hidden md:block">
+              Bem-vindo(a), {user?.nome || "Utilizador"}
+            </span>
           </div>
-          <div className="flex items-center gap-2 relative">
+          <div className="flex items-center gap-1 relative">
             <div ref={notifRef} className="relative">
-              <button onClick={() => setNotifOpen(!notifOpen)} className="p-2 text-primary hover:bg-surface-container rounded-full cursor-pointer active:scale-95 transition-transform relative">
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="p-2 text-primary hover:bg-surface-container rounded-full cursor-pointer active:scale-95 transition-all duration-150 relative"
+              >
                 <span className="material-symbols-outlined">notifications</span>
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-error text-[10px] font-bold text-on-error rounded-full flex items-center justify-center px-1 border-2 border-surface-container-lowest leading-none">
@@ -172,19 +212,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 )}
               </button>
               {notifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-xl z-50 max-h-[480px] flex flex-col">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-surface-variant">
-                    <span className="font-label-caps text-label-caps text-secondary">Notificações</span>
+                <div className="absolute right-0 top-full mt-2 w-80 bg-surface-container-lowest rounded-2xl border border-outline-variant/60 shadow-xl shadow-black/5 z-50 max-h-[480px] flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-surface-variant/60 bg-surface-container-low/50">
+                    <span className="font-label-caps text-label-caps text-secondary uppercase tracking-wider">Notificações</span>
                     {unreadCount > 0 && (
-                      <button onClick={() => markAsRead()} className="text-body-sm text-primary hover:underline font-medium cursor-pointer">
+                      <button
+                        onClick={() => markAsRead()}
+                        className="text-body-sm text-primary hover:underline font-medium cursor-pointer transition-all duration-150 active:scale-95"
+                      >
                         Marcar todas como lidas
                       </button>
                     )}
                   </div>
                   <div className="overflow-y-auto flex-1">
                     {notifications.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-secondary">
-                        <span className="material-symbols-outlined text-3xl mb-2 opacity-50">notifications_off</span>
+                      <div className="flex flex-col items-center justify-center py-12 text-secondary">
+                        <span className="material-symbols-outlined text-4xl mb-3 opacity-40">notifications_off</span>
                         <span className="text-body-sm">Sem notificações</span>
                       </div>
                     ) : (
@@ -192,26 +235,28 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                         <button
                           key={n.id}
                           onClick={() => !n.read && markAsRead([n.id])}
-                          className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-surface-container transition-colors cursor-pointer border-b border-surface-variant last:border-b-0 ${
-                            !n.read ? "bg-primary-container/10" : ""
-                          }`}
+                          className={cn(
+                            "w-full text-left px-4 py-3.5 flex gap-3 hover:bg-surface-container transition-all duration-150 cursor-pointer border-b border-surface-variant/40 last:border-b-0 active:scale-[0.99]",
+                            !n.read && "bg-primary-container/10"
+                          )}
                         >
-                          <span className={`material-symbols-outlined text-lg mt-0.5 ${
-                            n.type === "error" ? "text-error" :
-                            n.type === "warning" ? "text-[#e68a2e]" :
-                            n.type === "success" ? "text-[#2e7d32]" :
-                            "text-primary"
-                          }`}>
+                          <span
+                            className={cn(
+                              "material-symbols-outlined text-lg mt-0.5 shrink-0",
+                              n.type === "error" && "text-error",
+                              n.type === "warning" && "text-[#e68a2e]",
+                              n.type === "success" && "text-[#2e7d32]",
+                              n.type === "info" && "text-primary"
+                            )}
+                          >
                             {TYPE_ICONS[n.type] || "info"}
                           </span>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start gap-2">
-                              <span className={`text-body-sm ${!n.read ? "font-bold" : "font-medium"} text-on-surface truncate`}>
-                                {n.title}
-                              </span>
+                              <span className={cn("text-body-sm truncate", !n.read ? "font-semibold" : "font-medium")}>{n.title}</span>
                               <span className="text-body-xs text-tertiary shrink-0">{timeAgo(n.created_at)}</span>
                             </div>
-                            <p className="text-body-sm text-secondary mt-0.5 line-clamp-2">{n.message}</p>
+                            <p className="text-body-sm text-secondary mt-1 line-clamp-2">{n.message}</p>
                           </div>
                           {!n.read && <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />}
                         </button>
@@ -221,11 +266,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </div>
               )}
             </div>
-            <button className="p-2 text-primary hover:bg-surface-container rounded-full cursor-pointer active:scale-95 transition-transform">
+            <button className="p-2 text-primary hover:bg-surface-container rounded-full cursor-pointer active:scale-95 transition-all duration-150">
               <span className="material-symbols-outlined">help_outline</span>
             </button>
-            <div className="ml-4 pl-4 border-l border-surface-variant flex items-center gap-3 cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
+            <div className="ml-3 pl-3 border-l border-surface-variant/60 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform">
+              <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm shadow-primary/25">
                 {user?.nome?.charAt(0)?.toUpperCase() || "?"}
               </div>
               <span className="font-body-sm text-body-sm text-on-surface hidden sm:block">{user?.nome}</span>
@@ -234,7 +279,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content */}
-        <main data-lenis-prevent className="flex-1 overflow-y-auto p-4 md:p-container-padding bg-background pb-20">
+        <main ref={mainRef} data-lenis-prevent className="flex-1 overflow-y-auto p-4 md:p-8 bg-background pb-24">
           <div className="max-w-[1440px] mx-auto">
             {children}
           </div>
@@ -249,38 +294,57 @@ function NavItem({ href, icon, label, active, onClick }: { href: string; icon: s
     <Link
       href={href}
       onClick={onClick}
-      className={`rounded-lg flex items-center gap-3 px-3 py-2.5 transition-all ${
+      className={cn(
+        "rounded-xl flex items-center gap-3 px-3 py-2.5 transition-all duration-150 active:scale-[0.98]",
         active
-          ? "bg-primary text-on-primary font-medium"
-          : "text-secondary hover:bg-surface-container-high"
-      }`}
+          ? "bg-primary text-on-primary font-medium shadow-sm shadow-primary/25"
+          : "text-secondary hover:bg-surface-container hover:text-on-surface"
+      )}
     >
-      <span className="material-symbols-outlined" style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}>
+      <span
+        className="material-symbols-outlined text-[20px]"
+        style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+      >
         {icon}
       </span>
-      <span className="font-label-caps text-label-caps">{label}</span>
+      <span className="font-button text-button">{label}</span>
     </Link>
   );
 }
 
 export function KpiCard({ label, value, sub, icon, highlight }: { label: string; value: string; sub?: string; icon?: string; highlight?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      animateEnter(ref.current, slideUp, spring.gentle);
+    }
+  }, []);
+
   return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+    <div
+      ref={ref}
+      className="bg-surface-container-lowest rounded-2xl border border-outline-variant/60 p-6 shadow-sm hover:shadow-md hover:shadow-black/5 transition-all duration-200 relative overflow-hidden group active:scale-[0.99]"
+    >
       {icon && (
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <div className="absolute top-0 right-0 p-4 opacity-8 group-hover:opacity-12 transition-opacity duration-200">
           <span className="material-symbols-outlined text-6xl text-primary">{icon}</span>
         </div>
       )}
-      <p className="font-label-caps text-label-caps text-secondary mb-2">{label}</p>
-      <p className="font-headline-xl text-headline-xl text-on-surface mb-1">{value}</p>
-      {sub && <p className={`font-body-sm text-body-sm ${highlight === "primary" ? "text-primary font-medium" : "text-secondary"}`}>{sub}</p>}
+      <p className="font-label-caps text-label-caps text-secondary uppercase tracking-wider mb-2">{label}</p>
+      <p className="font-headline-xl text-headline-xl text-on-surface mb-1 tracking-tight">{value}</p>
+      {sub && (
+        <p className={cn("font-body-sm text-body-sm", highlight === "primary" ? "text-primary font-medium" : "text-secondary")}>
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
 
 export function Panel({ title, children, action, subtitle }: { title: string; children: React.ReactNode; action?: React.ReactNode; subtitle?: string }) {
   return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/60 p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="font-label-caps text-label-caps text-secondary uppercase tracking-wider">{title}</h3>
@@ -303,7 +367,7 @@ export function Badge({ variant, children }: { variant: "pago" | "pendente" | "e
     rascunho: "bg-[#dbe4ed] text-[#524435]",
   };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${styles[variant] || ""}`}>
+    <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full", styles[variant] || "")}>
       {children}
     </span>
   );
@@ -311,12 +375,12 @@ export function Badge({ variant, children }: { variant: "pago" | "pendente" | "e
 
 export function EmptyState({ icon, title, description }: { icon: string; title: string; description?: string }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
-      <div className="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center mb-4 text-secondary opacity-50">
+    <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
+      <div className="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center mb-5 text-secondary opacity-50">
         <span className="material-symbols-outlined text-4xl">{icon}</span>
       </div>
-      <p className="font-body-md text-body-md text-secondary">{title}</p>
-      {description && <p className="font-body-sm text-body-sm text-tertiary mt-1">{description}</p>}
+      <p className="font-body-md text-body-md text-secondary font-medium">{title}</p>
+      {description && <p className="font-body-sm text-body-sm text-tertiary mt-2 max-w-md">{description}</p>}
     </div>
   );
 }

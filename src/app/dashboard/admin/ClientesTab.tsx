@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Panel, Badge, EmptyState } from "@/components/dashboard";
 import { PaginationControls } from "@/components/PaginationControls";
+import { AppleButton } from "@/components/ui/AppleButton";
 
 interface Empresa {
   id: string;
@@ -286,10 +287,9 @@ export function ClientesTab() {
           <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-1">Clientes</h2>
           <p className="font-body-sm text-body-sm text-secondary">{empresas.length} empresas registadas</p>
         </div>
-        <button onClick={abrirNovo} className="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:brightness-110 transition-all font-button text-button cursor-pointer">
-          <span className="material-symbols-outlined text-[18px]">add</span>
+        <AppleButton onClick={abrirNovo} icon="add">
           Novo Cliente
-        </button>
+        </AppleButton>
       </div>
 
       <Panel title="Empresas">
@@ -310,18 +310,18 @@ export function ClientesTab() {
                         <div className="font-body-sm text-body-sm text-tertiary">CEO: {emp.ceo_nome} &middot; {emp.ceo_email}</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                       <Badge variant={emp.estado}>{emp.estado}</Badge>
-                      <button onClick={() => verComo(emp, "ceo")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100" title="Ver como CEO">
+                      <button onClick={() => verComo(emp, "ceo")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-100 active:scale-95" title="Ver como CEO">
                         <span className="material-symbols-outlined text-[18px]">visibility</span>
                       </button>
-                      <button onClick={() => verComo(emp, "gestor")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100" title="Ver como Gestor">
+                      <button onClick={() => verComo(emp, "gestor")} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-100 active:scale-95" title="Ver como Gestor">
                         <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
                       </button>
-                      <button onClick={() => abrirEditar(emp)} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100">
+                      <button onClick={() => abrirEditar(emp)} className="p-2 text-secondary hover:text-primary hover:bg-surface-container rounded-lg transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-100 active:scale-95">
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => eliminar(emp.id, emp.nome)} className="p-2 text-secondary hover:text-error hover:bg-error-container/20 rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100">
+                      <button onClick={() => eliminar(emp.id, emp.nome)} className="p-2 text-secondary hover:text-error hover:bg-error-container/20 rounded-lg transition-all duration-150 cursor-pointer opacity-0 group-hover:opacity-100 active:scale-95">
                         <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
@@ -330,7 +330,7 @@ export function ClientesTab() {
                     <div className="ml-6 pl-4 border-l-2 border-primary-container bg-surface-bright/30 rounded-b-xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="font-body-sm text-body-sm text-secondary">{colabs.length} colaborador(es)</span>
-                        <button onClick={abrirNovoColab} className="flex items-center gap-1 text-primary font-button text-button cursor-pointer hover:underline">
+                        <button onClick={abrirNovoColab} className="flex items-center gap-1 text-primary font-button text-button cursor-pointer hover:underline transition-all duration-150 active:scale-95">
                           <span className="material-symbols-outlined text-[16px]">add</span>
                           Adicionar
                         </button>
@@ -454,13 +454,12 @@ export function ClientesTab() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
-              <button onClick={() => setModalAberto(false)} className="px-4 py-2.5 rounded-xl border border-outline-variant text-secondary hover:bg-surface-container transition-all font-button text-button cursor-pointer">
+              <AppleButton variant="secondary" onClick={() => setModalAberto(false)}>
                 Cancelar
-              </button>
-              <button onClick={salvar} disabled={salvando || !form.nome || !form.nif || !form.ceo_nome || !form.ceo_email} className="px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:brightness-110 transition-all font-button text-button disabled:opacity-50 cursor-pointer flex items-center gap-2">
-                {salvando ? <span className="material-symbols-outlined text-[18px] animate-spin">sync</span> : <span className="material-symbols-outlined text-[18px]">check</span>}
+              </AppleButton>
+              <AppleButton onClick={salvar} disabled={salvando || !form.nome || !form.nif || !form.ceo_nome || !form.ceo_email} icon={salvando ? "sync" : "check"}>
                 {editando ? "Atualizar" : "Criar"}
-              </button>
+              </AppleButton>
             </div>
           </div>
         </div>
@@ -515,13 +514,12 @@ export function ClientesTab() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
-              <button onClick={() => setColabModal(false)} className="px-4 py-2.5 rounded-xl border border-outline-variant text-secondary hover:bg-surface-container transition-all font-button text-button cursor-pointer">
+              <AppleButton variant="secondary" onClick={() => setColabModal(false)}>
                 Cancelar
-              </button>
-              <button onClick={salvarColab} disabled={colabSalvando || !colabForm.nome || !colabForm.nif} className="px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:brightness-110 transition-all font-button text-button disabled:opacity-50 cursor-pointer flex items-center gap-2">
-                {colabSalvando ? <span className="material-symbols-outlined text-[18px] animate-spin">sync</span> : <span className="material-symbols-outlined text-[18px]">check</span>}
+              </AppleButton>
+              <AppleButton onClick={salvarColab} disabled={colabSalvando || !colabForm.nome || !colabForm.nif} icon={colabSalvando ? "sync" : "check"}>
                 {colabEditando ? "Atualizar" : "Criar"}
-              </button>
+              </AppleButton>
             </div>
           </div>
         </div>
