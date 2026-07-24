@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { DashboardLayout } from "@/components/dashboard";
+import { DashboardLayout, EmptyState } from "@/components/dashboard";
+import { AppleButton } from "@/components/ui/AppleButton";
+import { animateEnter, slideUp, spring } from "@/lib/animations";
 
 interface Pergunta {
   id: string;
@@ -27,6 +29,8 @@ export default function ColaboradorDashboard() {
   const [respostas, setRespostas] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"" | "submitting" | "success" | "error">("");
   const [envio, setEnvio] = useState<EnvioColaborador | null | "loading">("loading");
+  const [toast, setToast] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -37,6 +41,19 @@ export default function ColaboradorDashboard() {
       .then((data) => setEnvio(data.envio || null))
       .catch(() => setEnvio(null));
   }, [isAuthenticated, user, router, loading]);
+
+  useEffect(() => {
+    if (envio && envio !== "loading" && formRef.current) {
+      animateEnter(formRef.current, slideUp, spring.gentle);
+    }
+  }, [envio]);
+
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
 
   if (loading || !isAuthenticated || user?.role !== "colaborador") return null;
 
@@ -53,10 +70,8 @@ export default function ColaboradorDashboard() {
   if (!envio) {
     return (
       <DashboardLayout>
-        <div className="max-w-3xl mx-auto text-center py-24">
-          <span className="material-symbols-outlined text-5xl text-secondary/50 mb-4">assignment_late</span>
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Nenhum questionário disponível</h2>
-          <p className="font-body-md text-body-md text-secondary">De momento não tem nenhum questionário para responder.</p>
+        <div className="max-w-3xl mx-auto py-12">
+          <EmptyState icon="assignment_late" title="Nenhum questionário disponível" description="De momento não tem nenhum questionário para responder." />
         </div>
       </DashboardLayout>
     );
@@ -82,30 +97,47 @@ export default function ColaboradorDashboard() {
       });
       if (!res.ok) throw new Error("Erro ao submeter");
       setStatus("success");
+      setToast("Questionário submetido com sucesso!");
       setTimeout(() => router.push("/"), 2000);
     } catch {
       setStatus("error");
+      setToast("Erro ao submeter o questionário.");
     }
   }
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight mb-1">Inquérito de Bem-Estar</h2>
-          <p className="font-body-sm text-body-sm text-secondary">
-            As suas respostas são completamente anónimas. Obrigado pela participação.
-          </p>
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 bg-surface-container-lowest border border-outline-variant shadow-xl rounded-xl px-4 py-3 font-body-md text-body-md text-on-surface animate-in slide-in-from-right">
+          {toast}
+        </div>
+      )}
+
+      <div ref={formRef} className="max-w-3xl mx-auto">
+        <div className="mb-margin-md">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined">assignment</span>
+            </div>
+            <div>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface tracking-tight">{envio.quest_nome || "Inquérito"}</h2>
+              <p className="font-body-sm text-body-sm text-secondary">
+                As suas respostas são completamente anónimas.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 mb-8 bg-surface-container-lowest rounded-xl border border-outline-variant p-4">
+        <div className="flex items-center gap-4 mb-margin-md bg-surface-container-lowest rounded-xl border border-outline-variant p-4">
           <div className="flex-1 h-2 bg-surface-container rounded-full overflow-hidden">
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(progresso / totalPerguntas) * 100}%` }} />
           </div>
-          <span className="font-body-sm text-body-sm text-secondary whitespace-nowrap">{progresso}/{totalPerguntas}</span>
+          <span className="font-body-sm text-body-sm text-secondary whitespace-nowrap">
+            <span className="font-medium text-on-surface">{progresso}</span>/{totalPerguntas}
+          </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-margin-md">
           {perguntas.map((pq, i) => (
             <div key={pq.id} className={`bg-surface-container-lowest rounded-xl border p-6 transition-all ${respostas[pq.id] ? "border-primary" : "border-outline-variant"}`}>
               <div className="flex items-start gap-3 mb-4">
@@ -122,10 +154,10 @@ export default function ColaboradorDashboard() {
                       key={n}
                       onClick={() => responder(pq.id, String(n))}
                       disabled={jaSubmeteu}
-                      className={`w-9 h-9 rounded-lg font-label-caps text-label-caps transition-all cursor-pointer disabled:cursor-not-allowed ${
+                      className={`w-10 h-10 rounded-lg font-label-caps text-label-caps transition-all cursor-pointer disabled:cursor-not-allowed ${
                         respostas[pq.id] === String(n)
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary"
+                          ? "bg-primary text-on-primary shadow-sm shadow-primary/20"
+                          : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary hover:bg-surface-bright"
                       }`}
                     >
                       {n}
@@ -141,10 +173,10 @@ export default function ColaboradorDashboard() {
                       key={n}
                       onClick={() => responder(pq.id, String(n))}
                       disabled={jaSubmeteu}
-                      className={`w-8 h-8 rounded-lg text-[10px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed ${
+                      className={`w-9 h-9 rounded-lg text-[10px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed ${
                         respostas[pq.id] === String(n)
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary"
+                          ? "bg-primary text-on-primary shadow-sm shadow-primary/20"
+                          : "bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary hover:bg-surface-bright"
                       }`}
                     >
                       {n}
@@ -168,23 +200,25 @@ export default function ColaboradorDashboard() {
         </div>
 
         {status === "success" && (
-          <div className="mt-4 p-4 bg-[#dcfce7] text-[#166534] rounded-lg font-body-md text-body-md text-center">
-            ✓ Questionário submetido com sucesso! As suas respostas são anónimas. A redirecionar...
+          <div className="mb-margin-md p-4 bg-[#dcfce7] text-[#166534] rounded-xl font-body-md text-body-md text-center border border-[#bbf7d0]">
+            Questionário submetido com sucesso! As suas respostas são anónimas.
           </div>
         )}
         {status === "error" && (
-          <div className="mt-4 p-4 bg-[#fee2e2] text-[#991b1b] rounded-lg font-body-md text-body-md text-center">
+          <div className="mb-margin-md p-4 bg-[#fee2e2] text-[#991b1b] rounded-xl font-body-md text-body-md text-center border border-[#fecaca]">
             Erro ao submeter o questionário. Tente novamente.
           </div>
         )}
 
-        <button
+        <AppleButton
           onClick={submeter}
           disabled={progresso < totalPerguntas || status === "submitting" || jaSubmeteu}
-          className="mt-8 w-full bg-primary text-on-primary font-button text-button rounded-lg px-6 py-3.5 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          size="lg"
+          icon={jaSubmeteu ? "check_circle" : status === "submitting" ? "sync" : "send"}
+          className="w-full"
         >
-          {jaSubmeteu ? "✓ Submetido" : status === "submitting" ? "A submeter..." : progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "Submeter Questionário"}
-        </button>
+          {jaSubmeteu ? "Submetido" : status === "submitting" ? "A submeter..." : progresso < totalPerguntas ? `Responda todas as perguntas (${progresso}/${totalPerguntas})` : "Submeter Questionário"}
+        </AppleButton>
       </div>
     </DashboardLayout>
   );
